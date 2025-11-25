@@ -1,0 +1,119 @@
+<?php
+if (!is_user_logged_in()) {
+    return '<p class="text-red-500 text-center p-4 bg-red-100 rounded">' . __('لطفاً برای مشاهده درخواست‌ها وارد حساب کاربری خود شوید.', 'simple-ticket') . '</p>';
+}
+
+$user_id = get_current_user_id();
+$user = get_userdata($user_id);
+$first_name = get_user_meta($user_id, 'first_name', true);
+$last_name = get_user_meta($user_id, 'last_name', true);
+$user_full_name = trim($first_name . ' ' . $last_name);
+if (empty($user_full_name)) {
+    $user_full_name = $user->user_login;
+}
+$args = array(
+    'post_type' => 'ticket',
+    'author' => $user_id,
+    'posts_per_page' => -1,
+);
+$tickets = new WP_Query($args);
+?>
+
+<div class="container mx-auto p-4 max-w-4xl dir-rtl">
+    <?php if ($tickets->have_posts()): ?>
+        <table class="w-full border-collapse bg-white shadow-md rounded-lg">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="border p-3 text-center"><?php _e('درخواست', 'simple-ticket'); ?></th>
+                    <th class="border p-3 text-center"><?php _e('تاریخ ثبت', 'simple-ticket'); ?></th>
+                    <th class="border p-3 text-center"><?php _e('وضعیت', 'simple-ticket'); ?></th>
+                    <th class="border p-3 text-center"><?php _e('مشاهده', 'simple-ticket'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($tickets->have_posts()): $tickets->the_post(); ?>
+                    <tr class="hover:bg-gray-50">
+                        <td class="border p-3 text-center"><?php echo esc_html(get_post_meta(get_the_ID(), 'ticket_number', true)); ?></td>
+                        <td class="border p-3 text-center"><?php echo esc_html(get_the_date('Y/m/d')); ?></td>
+                        <td class="border p-3 text-center">
+                            <?php
+                            $status = get_post_meta(get_the_ID(), 'ticket_status', true);
+                            $statuses = array(
+                                'new' => __('جدید', 'simple-ticket'),
+                                'reviewed' => __('بررسی شده', 'simple-ticket'),
+                                'responded' => __('پاسخ داده شده', 'simple-ticket'),
+                                'closed' => __('بسته شده', 'simple-ticket'),
+                            );
+                            echo esc_html($statuses[$status] ?? __('نامشخص', 'simple-ticket'));
+                            ?>
+                        </td>
+                        <td class="border p-3 text-center">
+                            <button class="text-blue-600 hover:underline view-ticket" data-ticket-id="<?php echo get_the_ID(); ?>" data-ticket-details='<?php
+                                $details = array(
+                                    'ticket_number' => get_post_meta(get_the_ID(), 'ticket_number', true),
+                                    'order_number' => get_post_meta(get_the_ID(), 'order_number', true),
+                                    'order_date' => get_post_meta(get_the_ID(), 'order_date', true),
+                                    'delivery_method' => get_post_meta(get_the_ID(), 'delivery_method', true),
+                                    'issue_type' => get_post_meta(get_the_ID(), 'issue_type', true),
+                                    'issue_description' => get_post_meta(get_the_ID(), 'issue_description', true),
+                                    'attachment' => get_post_meta(get_the_ID(), 'attachment', true),
+                                    'responses' => get_post_meta(get_the_ID(), 'responses', true) ?: array(), // همیشه همه پاسخ‌ها
+                                    'status' => $statuses[$status] ?? __('نامشخص', 'simple-ticket'),
+                                    'user_full_name' => $user_full_name,
+                                );
+                                echo esc_attr(json_encode($details));
+                            ?>'>
+                                <?php _e('مشاهده', 'simple-ticket'); ?>
+                            </button>
+                        </td>
+                    </tr>
+                <?php endwhile; wp_reset_postdata(); ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p class="text-gray-500 text-center"><?php _e('هیچ درخواستی یافت نشد.', 'simple-ticket'); ?></p>
+    <?php endif; ?>
+    <?php if (isset($_GET['response_submitted'])): ?>
+        <div class="bg-green-100 text-green-700 p-4 rounded-lg text-center mt-4"><?php _e('پاسخ شما با موفقیت ثبت شد.', 'simple-ticket'); ?></div>
+    <?php endif; ?>
+</div>
+
+<!-- Popup for Ticket Details -->
+<div id="ticket-popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative dir-rtl" style="max-height: 80vh; overflow-y: auto;">
+        <button id="close-popup" class="absolute top-4 left-4 text-gray-600 hover:text-gray-800" style="font-size: 60px;">×</button>
+        <h2 class="text-2xl font-bold mb-4 text-gray-800"><?php _e('جزئیات درخواست', 'simple-ticket'); ?></h2>
+        <div class="space-y-4">
+            <div class="flex justify-between">
+                <span class="font-semibold"><?php _e('شماره درخواست:', 'simple-ticket'); ?></span>
+                <span id="popup-ticket-number" class="mr-2"></span>
+                <span class="font-semibold"><?php _e('وضعیت:', 'simple-ticket'); ?></span>
+                <span id="popup-status"></span>
+                <span class="font-semibold"><?php _e('شماره سفارش:', 'simple-ticket'); ?></span>
+                <span id="popup-order-number"></span>
+            </div>
+            <div class="flex flex-wrap gap-4">
+                <span class="font-semibold"><?php _e('تاریخ سفارش:', 'simple-ticket'); ?></span>
+                <span id="popup-order-date"></span>
+                <span class="font-semibold"><?php _e('نحوه دریافت:', 'simple-ticket'); ?></span>
+                <span id="popup-delivery-method"></span>
+                <span class="font-semibold"><?php _e('نوع مشکل:', 'simple-ticket'); ?></span>
+                <span id="popup-issue-type"></span>
+            </div>
+            <?php if ($attachment = get_post_meta(get_the_ID(), 'attachment', true)): ?>
+                <p><span class="font-semibold"><?php _e('فایل ضمیمه:', 'simple-ticket'); ?></span> <a id="attachment-link" href="<?php echo esc_url($attachment); ?>" target="_blank" class="text-blue-600 hover:underline"><?php _e('دانلود', 'simple-ticket'); ?></a></p>
+            <?php endif; ?>
+            <div id="responses-container" class="space-y-4">
+                <!-- Responses will be populated by JavaScript -->
+            </div>
+            <form method="post" class="mt-4">
+                <?php wp_nonce_field('submit_user_response', 'user_response_nonce'); ?>
+                <input type="hidden" name="ticket_id" id="ticket-id">
+                <input type="hidden" id="user_response_nonce" value="<?php echo wp_create_nonce('submit_user_response'); ?>">
+                <label for="user_response" class="block text-sm font-medium text-gray-700"><?php _e('پاسخ شما:', 'simple-ticket'); ?></label>
+                <textarea name="user_response" id="user_response" class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3"></textarea>
+                <button type="submit" class="mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"><?php _e('ارسال پاسخ', 'simple-ticket'); ?></button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.container {
+    @apply max-w-4xl mx-auto dir-rtl;
+}
+
+input, select, textarea {
+    @apply border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+textarea {
+    @apply resize-y;
+}
+
+button {
+    @apply bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600;
+    display: inline-block; /* اطمینان از نمایش صحیح */
+}
+
+/* Loading animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+.alert {
+    @apply p-4 rounded-md mb-4;
+}
+
+.alert-success {
+    @apply bg-green-100 text-green-700;
+}
+
+.alert-error {
+    @apply bg-red-100 text-red-700;
+}
+
+table {
+    @apply w-full border-collapse;
+}
+
+th, td {
+    @apply border border-gray-200 p-3 text-center;
+}
+
+tr:hover {
+    @apply bg-gray-50;
+}
+
+#ticket-popup {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center;
+}
+
+#ticket-popup > div {
+    @apply bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full relative;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+#close-popup {
+    @apply absolute top-4 left-4 text-gray-600 hover:text-gray-800 cursor-pointer;
+    font-size: 60px !important;
+}
+
+button.mt-2.bg-blue-600.text-white.py-2.px-4.rounded-md.hover\:bg-blue-700.focus\:outline-none.focus\:ring-2.focus\:ring-blue-600 {
+    background: #2f2483;
+    border-radius: 8px;
+    width: 100%;
+}
+
+/* Success message styles */
+.success-message {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Disabled button styles */
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

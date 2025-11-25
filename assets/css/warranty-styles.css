@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.container {
+    @apply max-w-2xl mx-auto dir-rtl;
+}
+
+input, select, textarea {
+    @apply border border-gray-300 rounded-md p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+/*button {
+    @apply bg-[#2f2483] text-white py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2f2483];
+    transition: background-color 0.3s ease; /* اضافه کردن انیمیشن برای هاور */
+}
+
+button:hover {
+    background-color: #2e3192 !important;
+}
+
+#warranty-success-popup {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50;
+}
+
+#warranty-success-popup > div {
+    @apply bg-green-600 text-white p-6 rounded-lg text-center;
+}
