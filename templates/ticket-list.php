@@ -106,7 +106,7 @@ $tickets = new WP_Query($args);
             <div id="responses-container" class="space-y-4">
                 <!-- Responses will be populated by JavaScript -->
             </div>
-            <form method="post" class="mt-4">
+            <form method="post" class="mt-4 user-response-form">
                 <?php wp_nonce_field('submit_user_response', 'user_response_nonce'); ?>
                 <input type="hidden" name="ticket_id" id="ticket-id">
                 <input type="hidden" id="user_response_nonce" value="<?php echo wp_create_nonce('submit_user_response'); ?>">
