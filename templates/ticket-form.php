@@ -17,8 +17,10 @@ HTML;
 ?>
 
 <div class="container mx-auto p-4 max-w-2xl dir-rtl">
+
     <div class="flex justify-end mb-4">
         <a href="https://dede.ir/all-tickets/" class="bg-[#2f2483] text-white hover:text-white py-3 rounded-md px-4" style="color: #fff !important;">مشاهده همه درخواست ها</a>
+
     </div>
     <?php if (isset($_GET['ticket_error'])): ?>
         <div class="bg-red-100 text-red-700 p-4 rounded-lg text-center mb-6"><?php _e('خطا در ثبت درخواست. لطفاً اطلاعات را بررسی کنید.', 'simple-ticket'); ?></div>
