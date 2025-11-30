@@ -62,3 +62,15 @@ HTML;
         <button type="submit" class="mt-6 w-full bg-[#2f2483] text-white py-3 rounded-md hover:bg-[#ed1c24] focus:outline-none focus:ring-2 focus:ring-[#2f2483]"><?php _e('ارسال درخواست', 'simple-ticket'); ?></button>
     </form>
 </div>
+
+<div id="ticket-success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full relative text-center">
+        <button id="close-success-modal" class="absolute top-3 left-3 text-gray-500 hover:text-gray-700" aria-label="بستن">
+            &times;
+        </button>
+        <div class="text-xl font-semibold text-gray-800 mb-4">درخواست شما با موفقیت ثبت شد</div>
+        <a href="https://dede.ir/all-tickets/" class="inline-flex items-center justify-center w-full bg-[#2f2483] text-white px-4 py-3 rounded-md hover:bg-[#ed1c24] transition-colors">
+            مشاهده درخواست ها
+        </a>
+    </div>
+</div>
