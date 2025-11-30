@@ -9,14 +9,16 @@ jQuery(document).ready(function($) {
         }
     });
 
+    let redirectTimeout;
+
     // Handle ticket form submission with AJAX
     $('.ticket-form').on('submit', function(e) {
         e.preventDefault(); // Prevent default form submission
-        
+
         const form = $(this);
         const submitButton = form.find('button[type="submit"]');
         const formData = new FormData(form[0]);
-        
+
         // Show loading state
         submitButton.prop('disabled', true);
         submitButton.text('در حال ارسال...');
@@ -36,6 +38,15 @@ jQuery(document).ready(function($) {
                 // Show success modal instead of redirecting
                 $('#ticket-success-modal').removeClass('hidden');
 
+                // Delay redirect to give users time to click the link
+                if (redirectTimeout) {
+                    clearTimeout(redirectTimeout);
+                }
+
+                redirectTimeout = setTimeout(function() {
+                    window.location.href = 'https://dede.ir/all-tickets/';
+                }, 7000);
+
                 // Reset button state
                 submitButton.prop('disabled', false);
                 submitButton.text('ارسال درخواست');
@@ -49,6 +60,7 @@ jQuery(document).ready(function($) {
                 submitButton.text('ارسال درخواست');
             }
         });
+        return false; // Extra safeguard to prevent full page reload
     });
 
     // Function to refresh ticket data via AJAX

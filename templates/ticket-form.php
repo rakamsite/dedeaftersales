@@ -64,7 +64,7 @@ HTML;
 </div>
 
 <div id="ticket-success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full relative text-center">
+    <div class="bg-white rounded-lg shadow-xl p-8 relative text-center flex flex-col justify-center" style="width: 300px; height: 300px;">
         <button id="close-success-modal" class="absolute top-3 left-3 text-gray-500 hover:text-gray-700" aria-label="بستن">
             &times;
         </button>
@@ -74,3 +74,4 @@ HTML;
         </a>
     </div>
 </div>
+
