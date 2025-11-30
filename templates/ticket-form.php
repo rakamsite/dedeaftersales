@@ -1,6 +1,6 @@
 <?php
 if (!is_user_logged_in()) {
-    return <<<HTML
+    echo <<<HTML
 <div class="w-full flex justify-center items-center mt-20">
     <button data-drawer-hide="mobile-menu" class="bg-[#2F2483] w-fit rounded-lg h-fit text-white flex py-3 px-5 mt-1/2 flex justify-between login_register_page">
         <svg width="21" height="26" viewBox="0 0 21 26" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -11,6 +11,8 @@ if (!is_user_logged_in()) {
     </button>
 </div>
 HTML;
+
+    return;
 }
 ?>
 
