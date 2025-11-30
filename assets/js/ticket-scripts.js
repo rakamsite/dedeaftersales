@@ -9,8 +9,6 @@ jQuery(document).ready(function($) {
         }
     });
 
-    let redirectTimeout;
-
     // Handle ticket form submission with AJAX
     $('.ticket-form').on('submit', function(e) {
         e.preventDefault(); // Prevent default form submission
@@ -35,17 +33,8 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 console.log('Ticket submitted successfully', response);
 
-                // Show success modal instead of redirecting
-                $('#ticket-success-modal').removeClass('hidden');
-
-                // Delay redirect to give users time to click the link
-                if (redirectTimeout) {
-                    clearTimeout(redirectTimeout);
-                }
-
-                redirectTimeout = setTimeout(function() {
-                    window.location.href = 'https://dede.ir/all-tickets/';
-                }, 7000);
+                // Redirect immediately after successful submission
+                window.location.href = 'https://dede.ir/all-tickets/';
 
                 // Reset button state
                 submitButton.prop('disabled', false);
@@ -153,13 +142,6 @@ jQuery(document).ready(function($) {
         console.log('Close attempt', e.target.id); // For debugging
         if ($(e.target).is('#ticket-popup') || $(e.target).is('#close-popup')) {
             $('#ticket-popup').addClass('hidden');
-        }
-    });
-
-    // Handle success modal close actions
-    $('#ticket-success-modal').on('click', function(e) {
-        if ($(e.target).is('#ticket-success-modal') || $(e.target).is('#close-success-modal')) {
-            $('#ticket-success-modal').addClass('hidden');
         }
     });
 
