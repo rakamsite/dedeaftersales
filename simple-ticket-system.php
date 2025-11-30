@@ -2,7 +2,7 @@
 /*
 Plugin Name: Simple Ticket System
 Description: A simple ticket system for WooCommerce with user ticket submission, admin management, and email notifications.
-Version: 1.8.1
+Version: 1.8.2
 Author: sajad
 Text Domain: simple-ticket
 */
