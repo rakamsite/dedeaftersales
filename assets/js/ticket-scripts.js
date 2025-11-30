@@ -141,7 +141,7 @@ jQuery(document).ready(function($) {
     });
 
     // Handle user response form submission
-    $('form').on('submit', function(e) {
+    $('.user-response-form').on('submit', function(e) {
         e.preventDefault(); // Prevent default form submission
         const form = $(this);
         const formData = form.serialize();
