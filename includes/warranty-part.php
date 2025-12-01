@@ -3,28 +3,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * Warranty part post type registration.
- */
-function sts_register_warranty_part_post_type() {
-    register_post_type('warranty_part', array(
-        'labels' => array(
-            'name'          => __('گارانتی‌های بخش گارانتی', 'warranty-part-plugin'),
-            'singular_name' => __('گارانتی بخش گارانتی', 'warranty-part-plugin'),
-        ),
-        'public'       => false,
-        'show_ui'      => true,
-        'show_in_menu' => true,
-        'capability_type' => 'post',
-        'hierarchical' => false,
-        'rewrite'      => false,
-        'query_var'    => false,
-        'supports'     => array('title'),
-        'menu_icon'    => 'dashicons-shield-alt',
-    ));
-}
-add_action('init', 'sts_register_warranty_part_post_type');
-
 function sts_warranty_part_load_textdomain() {
     load_textdomain('warranty-part-plugin', STS_PLUGIN_DIR . 'languages/warranty-part-plugin.mo');
 }
@@ -60,13 +38,14 @@ function sts_handle_warranty_part_submission() {
         }
 
         $warranty_id = wp_insert_post(array(
-            'post_type'   => 'warranty_part',
-            'post_title'  => sprintf(__('گارانتی - کد هولوگرام: %s', 'warranty-part-plugin'), $hologram_code),
+            'post_type'   => 'warranty',
+            'post_title'  => sprintf(__('گارانتی + %s', 'warranty-plugin'), $hologram_code),
             'post_status' => 'publish',
             'post_author' => 0,
         ));
 
         if ($warranty_id) {
+            update_post_meta($warranty_id, 'warranty_source', 'warranty_part');
             update_post_meta($warranty_id, 'device_type', $device_type);
             update_post_meta($warranty_id, 'hologram_code', $hologram_code);
             update_post_meta($warranty_id, 'operator_name', $operator_name);

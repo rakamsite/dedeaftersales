@@ -63,12 +63,13 @@ function sts_handle_warranty_submission() {
 
         $warranty_id = wp_insert_post(array(
             'post_type'   => 'warranty',
-            'post_title'  => sprintf(__('گارانتی - کد هولوگرام: %s', 'warranty-plugin'), $hologram_code),
+            'post_title'  => sprintf(__('گارانتی + %s', 'warranty-plugin'), $hologram_code),
             'post_status' => 'publish',
             'post_author' => get_current_user_id(),
         ));
 
         if ($warranty_id) {
+            update_post_meta($warranty_id, 'warranty_source', 'warranty');
             update_post_meta($warranty_id, 'product_type', $product_type);
             update_post_meta($warranty_id, 'hologram_code', $hologram_code);
             update_post_meta($warranty_id, 'pro_number', $pro_number);
@@ -101,6 +102,73 @@ function sts_handle_warranty_submission() {
     }
 }
 add_action('init', 'sts_handle_warranty_submission');
+
+/**
+ * Add admin metabox to display warranty details.
+ */
+function sts_add_warranty_details_meta_box() {
+    add_meta_box(
+        'sts_warranty_details',
+        __('اطلاعات ثبت‌شده گارانتی', 'warranty-plugin'),
+        'sts_render_warranty_details_meta_box',
+        'warranty',
+        'normal',
+        'high'
+    );
+}
+add_action('add_meta_boxes', 'sts_add_warranty_details_meta_box');
+
+/**
+ * Render warranty details in admin area.
+ */
+function sts_render_warranty_details_meta_box($post) {
+    $fields = array(
+        'warranty_source'        => __('منبع فرم', 'warranty-plugin'),
+        'product_type'           => __('نوع محصول', 'warranty-plugin'),
+        'device_type'            => __('نوع دستگاه', 'warranty-plugin'),
+        'hologram_code'          => __('کد هولوگرام طلایی', 'warranty-plugin'),
+        'pro_number'             => __('شماره PRO', 'warranty-plugin'),
+        'installer_name'         => __('نام نصاب', 'warranty-plugin'),
+        'installer_phone'        => __('شماره همراه نصاب', 'warranty-plugin'),
+        'installer_email'        => __('ایمیل نصاب', 'warranty-plugin'),
+        'installation_location'  => __('محل نصب پروژه', 'warranty-plugin'),
+        'installation_date'      => __('تاریخ نصب', 'warranty-plugin'),
+        'operator_name'          => __('نام بهره‌بردار', 'warranty-plugin'),
+        'operator_phone'         => __('شماره همراه بهره‌بردار', 'warranty-plugin'),
+        'operator_email'         => __('ایمیل بهره‌بردار', 'warranty-plugin'),
+        'purchase_date'          => __('تاریخ خرید', 'warranty-plugin'),
+        'seller'                 => __('فروشنده محصول', 'warranty-plugin'),
+    );
+
+    $source_labels = array(
+        'warranty'      => __('فرم گارانتی تجهیزات', 'warranty-plugin'),
+        'warranty_part' => __('فرم گارانتی سرکابل و مفصل', 'warranty-plugin'),
+    );
+
+    echo '<table class="widefat striped" style="margin-top:10px">';
+    echo '<tbody>';
+
+    foreach ($fields as $meta_key => $label) {
+        $raw_value = get_post_meta($post->ID, $meta_key, true);
+
+        if ($meta_key === 'warranty_source') {
+            $raw_value = $raw_value && isset($source_labels[$raw_value]) ? $source_labels[$raw_value] : __('نامشخص', 'warranty-plugin');
+        }
+
+        if ($raw_value === '') {
+            continue;
+        }
+
+        printf(
+            '<tr><th style="width:30%%">%s</th><td>%s</td></tr>',
+            esc_html($label),
+            esc_html($raw_value)
+        );
+    }
+
+    echo '</tbody>';
+    echo '</table>';
+}
 
 /**
  * Enqueue warranty assets.
