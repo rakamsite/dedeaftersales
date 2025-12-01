@@ -80,20 +80,23 @@ function sts_handle_warranty_submission() {
             update_post_meta($warranty_id, 'seller', $seller);
 
             $to       = 'warranty@ajaxir.com';
-            $subject  = __('ثبت گارانتی جدید', 'warranty-plugin');
+            $subject  = sprintf(__('گارانتی %s', 'warranty-plugin'), $hologram_code);
             $message  = sprintf(
-                __('جزئیات گارانتی جدید:\n\nنوع محصول: %s\nکد هولوگرام: %s\nشماره PRO: %s\nنام نصاب: %s\nشماره همراه نصاب: %s\nایمیل نصاب: %s\nمحل نصب: %s\nتاریخ نصب: %s\nفروشنده: %s', 'warranty-plugin'),
+                __('%s %s با کد %s که در تاریخ %s در %s نصب کرده است فعال سازی کرد.\nشماره تماس نصاب: %s\nشماره محصول %s مندرج در لیبل محصول میباشد و نصاب محصول را از %s خریداری کرده است.', 'warranty-plugin'),
+                $installer_name,
                 $product_type,
                 $hologram_code,
-                $pro_number,
-                $installer_name,
-                $installer_phone,
-                $installer_email ?: 'ندارد',
-                $installation_location,
                 $installation_date,
+                $installation_location,
+                $installer_phone,
+                $pro_number,
                 $seller
             );
             wp_mail($to, $subject, $message);
+
+            if (!empty($installer_email)) {
+                wp_mail($installer_email, $subject, $message);
+            }
 
             wp_redirect(add_query_arg('warranty_submitted', 'true', wp_get_referer()));
             exit;
