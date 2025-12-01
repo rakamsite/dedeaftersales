@@ -35,9 +35,6 @@ $tickets = new WP_Query($args);
 ?>
 
 <div class="container mx-auto p-4 max-w-4xl dir-rtl">
-    <div class="flex justify-end mb-4">
-        <a href="https://dede.ir/ticket/" class="bg-[#2f2483] text-white hover:text-white py-3 rounded-md px-4" style="color: #fff !important;">ثبت درخواست جدید</a>
-    </div>
     <?php if ($tickets->have_posts()): ?>
         <table class="w-full border-collapse bg-white shadow-md rounded-lg">
             <thead>
