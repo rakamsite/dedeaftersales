@@ -148,12 +148,22 @@ function sts_render_ticket_meta_box($post) {
     }
     ?>
     <div class="sts-ticket-meta">
-        <p><label><?php _e('شماره درخواست:', 'simple-ticket'); ?></label><input type="text" name="ticket_number" value="<?php echo esc_attr($ticket_number); ?>" readonly></p>
-        <p><label><?php _e('کاربر:', 'simple-ticket'); ?></label><input type="text" value="<?php echo esc_attr($user_fullname); ?>" readonly></p>
-        <p><label><?php _e('شماره سفارش:', 'simple-ticket'); ?></label><input type="text" name="order_number" value="<?php echo esc_attr($order_number); ?>" readonly></p>
-        <p><label><?php _e('تاریخ سفارش (شمسی):', 'simple-ticket'); ?></label><input type="text" name="order_date" value="<?php echo esc_attr($order_date); ?>" readonly></p>
-        <p><label><?php _e('نحوه دریافت:', 'simple-ticket'); ?></label><input type="text" name="delivery_method" value="<?php echo esc_attr($delivery_method); ?>" readonly></p>
-        <p><label><?php _e('نوع مشکل:', 'simple-ticket'); ?></label><input type="text" name="issue_type" value="<?php echo esc_attr($issue_type); ?>" readonly></p>
+        <div class="sts-ticket-summary">
+            <p>
+                <?php
+                printf(
+                    /* translators: 1: ticket number, 2: user full name, 3: order number, 4: order date, 5: delivery method, 6: issue type */
+                    __('این درخواست به شماره %1$s توسط %2$s برای شماره سفارش %3$s که در تاریخ %4$s انجام و توسط %5$s دریافت شده بود ثبت شده است. کاربر نوع مشکل را %6$s اعلام کرده است.', 'simple-ticket'),
+                    esc_html($ticket_number),
+                    esc_html($user_fullname),
+                    esc_html($order_number),
+                    esc_html($order_date),
+                    esc_html($delivery_method),
+                    esc_html($issue_type)
+                );
+                ?>
+            </p>
+        </div>
         <p><label><?php _e('شرح مشکل:', 'simple-ticket'); ?></label><textarea name="issue_description" readonly><?php echo esc_textarea($issue_description); ?></textarea></p>
         <p><label><?php _e('ترجیح پاسخگویی:', 'simple-ticket'); ?></label><input type="text" name="response_preference" value="<?php echo esc_attr($response_pref); ?>" readonly></p>
         <?php if ($attachment) : ?>
