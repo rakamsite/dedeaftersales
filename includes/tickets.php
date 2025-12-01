@@ -108,6 +108,23 @@ function sts_add_ticket_meta_box() {
 }
 add_action('add_meta_boxes', 'sts_add_ticket_meta_box');
 
+/**
+ * Enqueue admin assets for ticket post type.
+ */
+function sts_enqueue_admin_ticket_assets($hook) {
+    $screen = get_current_screen();
+
+    if ($screen && $screen->post_type === 'ticket') {
+        wp_enqueue_style(
+            'sts-admin-ticket',
+            plugin_dir_url(STS_PLUGIN_FILE) . 'assets/css/admin-ticket.css',
+            array(),
+            '1.0'
+        );
+    }
+}
+add_action('admin_enqueue_scripts', 'sts_enqueue_admin_ticket_assets');
+
 function sts_render_ticket_meta_box($post) {
     wp_nonce_field('sts_save_ticket_meta', 'ticket_meta_nonce');
     $ticket_number      = get_post_meta($post->ID, 'ticket_number', true);
@@ -130,30 +147,36 @@ function sts_render_ticket_meta_box($post) {
         $user_fullname = $user ? $user->user_login : 'کاربر';
     }
     ?>
-    <p><label><?php _e('شماره درخواست:', 'simple-ticket'); ?></label><input type="text" name="ticket_number" value="<?php echo esc_attr($ticket_number); ?>" readonly></p>
-    <p><label><?php _e('کاربر:', 'simple-ticket'); ?></label><input type="text" value="<?php echo esc_attr($user_fullname); ?>" readonly></p>
-    <p><label><?php _e('شماره سفارش:', 'simple-ticket'); ?></label><input type="text" name="order_number" value="<?php echo esc_attr($order_number); ?>" readonly></p>
-    <p><label><?php _e('تاریخ سفارش (شمسی):', 'simple-ticket'); ?></label><input type="text" name="order_date" value="<?php echo esc_attr($order_date); ?>" readonly></p>
-    <p><label><?php _e('نحوه دریافت:', 'simple-ticket'); ?></label><input type="text" name="delivery_method" value="<?php echo esc_attr($delivery_method); ?>" readonly></p>
-    <p><label><?php _e('نوع مشکل:', 'simple-ticket'); ?></label><input type="text" name="issue_type" value="<?php echo esc_attr($issue_type); ?>" readonly></p>
-    <p><label><?php _e('شرح مشکل:', 'simple-ticket'); ?></label><textarea name="issue_description" readonly><?php echo esc_textarea($issue_description); ?></textarea></p>
-    <p><label><?php _e('ترجیح پاسخگویی:', 'simple-ticket'); ?></label><input type="text" name="response_preference" value="<?php echo esc_attr($response_pref); ?>" readonly></p>
-    <?php if ($attachment) : ?>
-        <p><label><?php _e('فایل ضمیمه:', 'simple-ticket'); ?></label><a href="<?php echo esc_url($attachment); ?>" target="_blank"><?php _e('دانلود فایل', 'simple-ticket'); ?></a></p>
-    <?php endif; ?>
-    <h3><?php _e('پاسخ‌ها:', 'simple-ticket'); ?></h3>
-    <?php foreach ($responses as $response) : ?>
-        <p><strong><?php echo esc_html($response['author'] === 'admin' ? 'ادمین' : $user_fullname); ?> (<?php echo esc_html($response['date']); ?>):</strong><br><?php echo esc_textarea($response['message']); ?></p>
-    <?php endforeach; ?>
-    <p><label><?php _e('پاسخ ادمین:', 'simple-ticket'); ?></label><textarea name="admin_response"></textarea></p>
-    <p><label><?php _e('وضعیت درخواست:', 'simple-ticket'); ?></label>
-        <select name="ticket_status">
-            <option value="new" <?php selected($ticket_status, 'new'); ?>><?php _e('جدید', 'simple-ticket'); ?></option>
-            <option value="reviewed" <?php selected($ticket_status, 'reviewed'); ?>><?php _e('بررسی شده', 'simple-ticket'); ?></option>
-            <option value="responded" <?php selected($ticket_status, 'responded'); ?>><?php _e('پاسخ داده شده', 'simple-ticket'); ?></option>
-            <option value="closed" <?php selected($ticket_status, 'closed'); ?>><?php _e('بسته شده', 'simple-ticket'); ?></option>
-        </select>
-    </p>
+    <div class="sts-ticket-meta">
+        <p><label><?php _e('شماره درخواست:', 'simple-ticket'); ?></label><input type="text" name="ticket_number" value="<?php echo esc_attr($ticket_number); ?>" readonly></p>
+        <p><label><?php _e('کاربر:', 'simple-ticket'); ?></label><input type="text" value="<?php echo esc_attr($user_fullname); ?>" readonly></p>
+        <p><label><?php _e('شماره سفارش:', 'simple-ticket'); ?></label><input type="text" name="order_number" value="<?php echo esc_attr($order_number); ?>" readonly></p>
+        <p><label><?php _e('تاریخ سفارش (شمسی):', 'simple-ticket'); ?></label><input type="text" name="order_date" value="<?php echo esc_attr($order_date); ?>" readonly></p>
+        <p><label><?php _e('نحوه دریافت:', 'simple-ticket'); ?></label><input type="text" name="delivery_method" value="<?php echo esc_attr($delivery_method); ?>" readonly></p>
+        <p><label><?php _e('نوع مشکل:', 'simple-ticket'); ?></label><input type="text" name="issue_type" value="<?php echo esc_attr($issue_type); ?>" readonly></p>
+        <p><label><?php _e('شرح مشکل:', 'simple-ticket'); ?></label><textarea name="issue_description" readonly><?php echo esc_textarea($issue_description); ?></textarea></p>
+        <p><label><?php _e('ترجیح پاسخگویی:', 'simple-ticket'); ?></label><input type="text" name="response_preference" value="<?php echo esc_attr($response_pref); ?>" readonly></p>
+        <?php if ($attachment) : ?>
+            <p><label><?php _e('فایل ضمیمه:', 'simple-ticket'); ?></label><a href="<?php echo esc_url($attachment); ?>" target="_blank"><?php _e('دانلود فایل', 'simple-ticket'); ?></a></p>
+        <?php endif; ?>
+
+        <div class="sts-responses">
+            <h3><?php _e('پاسخ‌ها:', 'simple-ticket'); ?></h3>
+            <?php foreach ($responses as $response) : ?>
+                <p><strong><?php echo esc_html($response['author'] === 'admin' ? 'ادمین' : $user_fullname); ?> (<?php echo esc_html($response['date']); ?>):</strong><br><?php echo esc_textarea($response['message']); ?></p>
+            <?php endforeach; ?>
+        </div>
+
+        <p><label><?php _e('پاسخ ادمین:', 'simple-ticket'); ?></label><textarea name="admin_response"></textarea></p>
+        <p><label><?php _e('وضعیت درخواست:', 'simple-ticket'); ?></label>
+            <select name="ticket_status">
+                <option value="new" <?php selected($ticket_status, 'new'); ?>><?php _e('جدید', 'simple-ticket'); ?></option>
+                <option value="reviewed" <?php selected($ticket_status, 'reviewed'); ?>><?php _e('بررسی شده', 'simple-ticket'); ?></option>
+                <option value="responded" <?php selected($ticket_status, 'responded'); ?>><?php _e('پاسخ داده شده', 'simple-ticket'); ?></option>
+                <option value="closed" <?php selected($ticket_status, 'closed'); ?>><?php _e('بسته شده', 'simple-ticket'); ?></option>
+            </select>
+        </p>
+    </div>
     <?php
 }
 
