@@ -149,13 +149,23 @@ function sts_render_ticket_meta_box($post) {
     ?>
     <div class="sts-ticket-meta">
         <div class="sts-ticket-summary">
-            <p><strong><?php _e('شماره درخواست:', 'simple-ticket'); ?></strong><span class="sts-ticket-value"><?php echo esc_html($ticket_number); ?></span></p>
-            <p><strong><?php _e('نام کاربر:', 'simple-ticket'); ?></strong><span class="sts-ticket-value"><?php echo esc_html($user_fullname); ?></span></p>
-            <p><strong><?php _e('شماره سفارش:', 'simple-ticket'); ?></strong><span class="sts-ticket-value"><?php echo esc_html($order_number); ?></span></p>
-            <p><strong><?php _e('تاریخ سفارش:', 'simple-ticket'); ?></strong><span class="sts-ticket-value"><?php echo esc_html($order_date); ?></span></p>
-            <p><strong><?php _e('روش ارسال:', 'simple-ticket'); ?></strong><span class="sts-ticket-value"><?php echo esc_html($delivery_method); ?></span></p>
-            <p><strong><?php _e('نوع مشکل:', 'simple-ticket'); ?></strong><span class="sts-ticket-value"><?php echo esc_html($issue_type); ?></span></p>
+            <p>
+                <?php
+                printf(
+                    /* translators: 1: ticket number, 2: user full name, 3: order number, 4: order date, 5: delivery method, 6: issue type */
+                    __('این درخواست به شماره %1$s توسط %2$s برای شماره سفارش %3$s که در تاریخ %4$s انجام و توسط %5$s دریافت شده بود ثبت شده است. کاربر نوع مشکل را %6$s اعلام کرده است.', 'simple-ticket'),
+                    esc_html($ticket_number),
+                    esc_html($user_fullname),
+                    esc_html($order_number),
+                    esc_html($order_date),
+                    esc_html($delivery_method),
+                    esc_html($issue_type)
+                );
+                ?>
+            </p>
         </div>
+        <p><label><?php _e('شرح مشکل:', 'simple-ticket'); ?></label><textarea name="issue_description" readonly><?php echo esc_textarea($issue_description); ?></textarea></p>
+        <p><label><?php _e('ترجیح پاسخگویی:', 'simple-ticket'); ?></label><input type="text" name="response_preference" value="<?php echo esc_attr($response_pref); ?>" readonly></p>
         <?php if ($attachment) : ?>
             <p><label><?php _e('فایل ضمیمه:', 'simple-ticket'); ?></label><a href="<?php echo esc_url($attachment); ?>" target="_blank"><?php _e('دانلود فایل', 'simple-ticket'); ?></a></p>
         <?php endif; ?>
