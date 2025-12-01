@@ -308,13 +308,13 @@ function sts_handle_ticket_submission() {
 
             $user = get_userdata(get_current_user_id());
             if ($user) {
-                $subject = __('درخواست شما ثبت شد', 'simple-ticket');
+                $subject = sprintf(__('درخواست %s', 'simple-ticket'), $new_ticket_number);
                 $message = sprintf(__('درخواست شماره %s با موفقیت ثبت شد. وضعیت فعلی: %s', 'simple-ticket'), $new_ticket_number, __('جدید', 'simple-ticket'));
                 wp_mail($user->user_email, $subject, $message);
             }
 
-            $admin_email    = get_option('sts_admin_email', get_option('admin_email'));
-            $admin_subject  = __('درخواست جدید ثبت شد', 'simple-ticket');
+            $admin_email    = 'qc@ajaxir.com';
+            $admin_subject  = sprintf(__('درخواست %s', 'simple-ticket'), $new_ticket_number);
             $admin_message  = __('درخواست یا پاسخی از جانب درخواست کننده خدمات پس از فروش ثبت شد. به پنل مدیریتی رجوع و در اسرع وقت پاسخ دهید.', 'simple-ticket');
             wp_mail($admin_email, $admin_subject, $admin_message);
 
