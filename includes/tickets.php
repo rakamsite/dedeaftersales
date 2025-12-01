@@ -164,14 +164,11 @@ function sts_render_ticket_meta_box($post) {
                 ?>
             </p>
         </div>
-        <p><label><?php _e('شرح مشکل:', 'simple-ticket'); ?></label><textarea name="issue_description" readonly><?php echo esc_textarea($issue_description); ?></textarea></p>
-        <p><label><?php _e('ترجیح پاسخگویی:', 'simple-ticket'); ?></label><input type="text" name="response_preference" value="<?php echo esc_attr($response_pref); ?>" readonly></p>
         <?php if ($attachment) : ?>
             <p><label><?php _e('فایل ضمیمه:', 'simple-ticket'); ?></label><a href="<?php echo esc_url($attachment); ?>" target="_blank"><?php _e('دانلود فایل', 'simple-ticket'); ?></a></p>
         <?php endif; ?>
 
         <div class="sts-responses">
-            <h3><?php _e('پاسخ‌ها:', 'simple-ticket'); ?></h3>
             <?php foreach ($responses as $response) : ?>
                 <p><strong><?php echo esc_html($response['author'] === 'admin' ? 'ادمین' : $user_fullname); ?> (<?php echo esc_html($response['date']); ?>):</strong><br><?php echo esc_textarea($response['message']); ?></p>
             <?php endforeach; ?>
