@@ -95,13 +95,8 @@ jQuery(document).ready(function($) {
         const details = $(this).data('ticket-details');
         const ticketId = $(this).data('ticket-id');
         if (details) {
-            $('#popup-ticket-number').text(details.ticket_number);
-            $('#popup-order-number').text(details.order_number);
-            $('#popup-order-date').text(details.order_date);
-            $('#popup-delivery-method').text(details.delivery_method);
-            $('#popup-issue-type').text(details.issue_type);
-            $('#popup-issue-description').text(details.issue_description);
-            $('#popup-status').text(details.status);
+            const summaryText = `درخواست شما به شماره ${details.ticket_number} برای شماره سفارش ${details.order_number} که در تاریخ ${details.order_date} انجام و توسط ${details.delivery_method} دریافت کرده اید ثبت شده است. نوع مشکل را ${details.issue_type} گزارش داده اید. درخواست شما هم اکنون در وضعیت ${details.status} می باشد.`;
+            $('#popup-summary').text(summaryText);
             $('#ticket-id').val(ticketId);
 
             // Populate responses

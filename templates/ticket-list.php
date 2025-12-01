@@ -102,22 +102,7 @@ $tickets = new WP_Query($args);
         <button id="close-popup" class="absolute top-4 left-4 text-gray-600 hover:text-gray-800" style="font-size: 60px;">×</button>
         <h2 class="text-2xl font-bold mb-4 text-gray-800"><?php _e('جزئیات درخواست', 'simple-ticket'); ?></h2>
         <div class="space-y-4">
-            <div class="flex justify-between">
-                <span class="font-semibold"><?php _e('شماره درخواست:', 'simple-ticket'); ?></span>
-                <span id="popup-ticket-number" class="mr-2"></span>
-                <span class="font-semibold"><?php _e('وضعیت:', 'simple-ticket'); ?></span>
-                <span id="popup-status"></span>
-                <span class="font-semibold"><?php _e('شماره سفارش:', 'simple-ticket'); ?></span>
-                <span id="popup-order-number"></span>
-            </div>
-            <div class="flex flex-wrap gap-4">
-                <span class="font-semibold"><?php _e('تاریخ سفارش:', 'simple-ticket'); ?></span>
-                <span id="popup-order-date"></span>
-                <span class="font-semibold"><?php _e('نحوه دریافت:', 'simple-ticket'); ?></span>
-                <span id="popup-delivery-method"></span>
-                <span class="font-semibold"><?php _e('نوع مشکل:', 'simple-ticket'); ?></span>
-                <span id="popup-issue-type"></span>
-            </div>
+            <p id="popup-summary" class="text-gray-700 leading-7"></p>
             <?php if ($attachment = get_post_meta(get_the_ID(), 'attachment', true)): ?>
                 <p><span class="font-semibold"><?php _e('فایل ضمیمه:', 'simple-ticket'); ?></span> <a id="attachment-link" href="<?php echo esc_url($attachment); ?>" target="_blank" class="text-blue-600 hover:underline"><?php _e('دانلود', 'simple-ticket'); ?></a></p>
             <?php endif; ?>
