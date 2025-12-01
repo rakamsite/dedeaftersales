@@ -98,7 +98,7 @@ $tickets = new WP_Query($args);
 
 <!-- Popup for Ticket Details -->
 <div id="ticket-popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative dir-rtl" style="max-height: 80vh; overflow-y: auto;">
+    <div class="bg-white p-6 shadow-lg w-full h-full max-w-full relative dir-rtl overflow-y-auto">
         <button id="close-popup" class="absolute top-4 left-4 text-gray-600 hover:text-gray-800" style="font-size: 60px;">×</button>
         <h2 class="text-2xl font-bold mb-4 text-gray-800"><?php _e('جزئیات درخواست', 'simple-ticket'); ?></h2>
         <div class="space-y-4">
