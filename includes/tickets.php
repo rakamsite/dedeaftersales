@@ -109,6 +109,23 @@ function sts_add_ticket_meta_box() {
 add_action('add_meta_boxes', 'sts_add_ticket_meta_box');
 
 /**
+ * Customize submit button text for ticket post type.
+ */
+function sts_customize_ticket_submit_button($translation, $text, $domain) {
+    if (!is_admin() || !function_exists('get_current_screen')) {
+        return $translation;
+    }
+
+    $screen = get_current_screen();
+    if ($screen && $screen->post_type === 'ticket' && ($text === 'Update' || $translation === 'بروزرسانی' || $translation === 'به‌روزرسانی')) {
+        return __('ارسال پاسخ', 'simple-ticket');
+    }
+
+    return $translation;
+}
+add_filter('gettext', 'sts_customize_ticket_submit_button', 10, 3);
+
+/**
  * Enqueue admin assets for ticket post type.
  */
 function sts_enqueue_admin_ticket_assets($hook) {
@@ -162,6 +179,25 @@ function sts_render_ticket_meta_box($post) {
     }
     ?>
     <div class="sts-ticket-meta">
+        <div class="sts-ticket-info-grid">
+            <div class="info-item">
+                <span class="label"><?php _e('شماره درخواست', 'simple-ticket'); ?></span>
+                <span class="value"><?php echo esc_html($ticket_number); ?></span>
+            </div>
+            <div class="info-item">
+                <span class="label"><?php _e('ثبت‌کننده', 'simple-ticket'); ?></span>
+                <span class="value"><?php echo esc_html($user_fullname); ?></span>
+            </div>
+            <div class="info-item">
+                <span class="label"><?php _e('شماره سفارش یا فاکتور', 'simple-ticket'); ?></span>
+                <span class="value"><?php echo esc_html($order_number); ?></span>
+            </div>
+            <div class="info-item">
+                <span class="label"><?php _e('تاریخ دریافت سفارش', 'simple-ticket'); ?></span>
+                <span class="value"><?php echo esc_html($order_date); ?></span>
+            </div>
+        </div>
+
         <div class="sts-ticket-summary">
             <p>
                 <?php

@@ -5,6 +5,32 @@
     font-size: 14px;
 }
 
+.sts-ticket-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.sts-ticket-info-grid .info-item {
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 10px 12px;
+    background-color: #fff;
+}
+
+.sts-ticket-info-grid .label {
+    display: block;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.sts-ticket-info-grid .value {
+    display: block;
+    margin-top: 6px;
+    color: #2c3338;
+    word-break: break-word;
+}
+
 .sts-ticket-meta p {
     display: flex;
     flex-direction: column;
