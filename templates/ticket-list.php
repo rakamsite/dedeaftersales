@@ -91,7 +91,6 @@ $tickets = new WP_Query($args);
                                     'issue_items' => $issue_items,
                                     'responses' => get_post_meta(get_the_ID(), 'responses', true) ?: array(), // همیشه همه پاسخ‌ها
                                     'status' => $statuses[$status] ?? __('نامشخص', 'simple-ticket'),
-                                    'status_key' => $status,
                                     'user_full_name' => $user_full_name,
                                 );
                                 echo esc_attr(json_encode($details));
@@ -112,58 +111,40 @@ $tickets = new WP_Query($args);
 </div>
 
 <!-- Popup for Ticket Details -->
-<div id="ticket-popup" class="ticket-popup hidden">
-    <div class="ticket-popup__dialog dir-rtl">
-        <button id="close-popup" class="ticket-popup__close" aria-label="<?php esc_attr_e('بستن', 'simple-ticket'); ?>">×</button>
-        <div class="ticket-popup__body">
-            <div class="ticket-popup__header">
-                <div>
-                    <p class="ticket-popup__subtitle"><?php _e('مشاهده و پیگیری درخواست', 'simple-ticket'); ?> <span id="popup-ticket-number-inline">-</span></p>
-                    <h2 class="ticket-popup__title"><?php _e('جزئیات درخواست', 'simple-ticket'); ?></h2>
+<div id="ticket-popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 shadow-lg w-full h-full max-w-full relative dir-rtl overflow-y-auto">
+        <div class="flex items-start justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-800"><?php _e('جزئیات درخواست', 'simple-ticket'); ?></h2>
+            <button id="close-popup" class="text-gray-600 hover:text-gray-800 text-4xl leading-none">×</button>
+        </div>
+        <div class="space-y-4">
+            <div class="grid gap-4 sm:grid-cols-1 md:grid-cols-3">
+                <div class="flex rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
+                    <span class="bg-gray-200 text-gray-800 px-4 py-3 text-sm font-semibold whitespace-nowrap"><?php _e('شماره درخواست', 'simple-ticket'); ?></span>
+                    <span id="popup-ticket-number" class="px-4 py-3 text-gray-900 font-semibold">-</span>
                 </div>
-                <div class="ticket-popup__status">
-                    <span class="ticket-popup__status-label"><?php _e('وضعیت', 'simple-ticket'); ?></span>
-                    <div id="ticket-status-steps" class="ticket-popup__steps"></div>
+                <div class="flex rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
+                    <span class="bg-gray-200 text-gray-800 px-4 py-3 text-sm font-semibold whitespace-nowrap"><?php _e('شماره سفارش', 'simple-ticket'); ?></span>
+                    <span id="popup-order-number" class="px-4 py-3 text-gray-900 font-semibold">-</span>
                 </div>
-            </div>
-
-            <div class="ticket-popup__chips">
-                <div class="ticket-popup__chip">
-                    <span><?php _e('شماره درخواست', 'simple-ticket'); ?></span>
-                    <strong id="popup-ticket-number">-</strong>
-                </div>
-                <div class="ticket-popup__chip">
-                    <span><?php _e('شماره سفارش', 'simple-ticket'); ?></span>
-                    <strong id="popup-order-number">-</strong>
-                </div>
-                <div class="ticket-popup__chip">
-                    <span><?php _e('تاریخ دریافت', 'simple-ticket'); ?></span>
-                    <strong id="popup-order-date">-</strong>
+                <div class="flex rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
+                    <span class="bg-gray-200 text-gray-800 px-4 py-3 text-sm font-semibold whitespace-nowrap"><?php _e('تاریخ دریافت', 'simple-ticket'); ?></span>
+                    <span id="popup-order-date" class="px-4 py-3 text-gray-900 font-semibold">-</span>
                 </div>
             </div>
-
-            <p id="popup-summary" class="ticket-popup__summary"></p>
-
-            <h3 class="ticket-popup__section-title"><?php _e('مشخصات کالا', 'simple-ticket'); ?></h3>
-            <div id="popup-items" class="ticket-popup__items"></div>
-
-            <h3 class="ticket-popup__section-title"><?php _e('پاسخ‌ها', 'simple-ticket'); ?></h3>
-            <div class="ticket-popup__responses">
-                <div class="ticket-popup__response-block">
-                    <div class="ticket-popup__response-label"><?php _e('پاسخ پشتیبان', 'simple-ticket'); ?></div>
-                    <div id="responses-container" class="ticket-popup__response-list"></div>
-                </div>
-                <div class="ticket-popup__response-block">
-                    <div class="ticket-popup__response-label"><?php _e('پاسخ شما', 'simple-ticket'); ?></div>
-                    <form method="post" class="user-response-form">
-                        <?php wp_nonce_field('submit_user_response', 'user_response_nonce'); ?>
-                        <input type="hidden" name="ticket_id" id="ticket-id">
-                        <input type="hidden" id="user_response_nonce" value="<?php echo wp_create_nonce('submit_user_response'); ?>">
-                        <textarea name="user_response" id="user_response" class="ticket-popup__textarea" rows="4" placeholder="<?php esc_attr_e('پاسخ خود را در این قسمت وارد کنید...', 'simple-ticket'); ?>"></textarea>
-                        <button type="submit" class="ticket-popup__submit"><?php _e('ارسال پاسخ', 'simple-ticket'); ?></button>
-                    </form>
-                </div>
+            <p id="popup-summary" class="text-gray-700 leading-7"></p>
+            <div id="popup-items" class="space-y-3"></div>
+            <div id="responses-container" class="space-y-4">
+                <!-- Responses will be populated by JavaScript -->
             </div>
+            <form method="post" class="mt-4 user-response-form">
+                <?php wp_nonce_field('submit_user_response', 'user_response_nonce'); ?>
+                <input type="hidden" name="ticket_id" id="ticket-id">
+                <input type="hidden" id="user_response_nonce" value="<?php echo wp_create_nonce('submit_user_response'); ?>">
+                <label for="user_response" class="block text-sm font-medium text-gray-700"><?php _e('پاسخ شما:', 'simple-ticket'); ?></label>
+                <textarea name="user_response" id="user_response" class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3"></textarea>
+                <button type="submit" class="mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"><?php _e('ارسال پاسخ', 'simple-ticket'); ?></button>
+            </form>
         </div>
     </div>
 </div>

@@ -160,38 +160,13 @@ jQuery(document).ready(function($) {
             const orderNumber = details.order_number || '-';
             const orderDate = details.order_date || '-';
             const ticketStatus = details.status || '-';
-            const statusKey = details.status_key || 'new';
 
             $('#popup-ticket-number').text(ticketNumber);
-            $('#popup-ticket-number-inline').text(ticketNumber);
             $('#popup-order-number').text(orderNumber);
             $('#popup-order-date').text(orderDate);
             const summaryText = `درخواست شما به شماره ${ticketNumber} برای شماره سفارش ${orderNumber} که در تاریخ ${orderDate} دریافت شده ثبت شده است. این درخواست هم اکنون در وضعیت ${ticketStatus} می‌باشد.`;
             $('#popup-summary').text(summaryText);
             $('#ticket-id').val(ticketId);
-
-            const statusSteps = [
-                { key: 'new', label: 'درخواست بررسی' },
-                { key: 'reviewed', label: 'در انتظار تایید' },
-                { key: 'responded', label: 'در حال بررسی' },
-                { key: 'closed', label: 'تایید شده' }
-            ];
-
-            const currentStepIndex = Math.max(statusSteps.findIndex(step => step.key === statusKey), 0);
-            const $stepsContainer = $('#ticket-status-steps').empty();
-            statusSteps.forEach((step, index) => {
-                const isActive = index <= currentStepIndex;
-                const icon = isActive
-                    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-                    : '<span style="font-size:14px;">●</span>';
-
-                $stepsContainer.append(
-                    `<div class="ticket-popup__step ${isActive ? 'active' : ''}">` +
-                        `<div class="ticket-popup__step-icon">${icon}</div>` +
-                        `<div class="ticket-popup__step-label">${step.label}</div>` +
-                    `</div>`
-                );
-            });
 
             const items = details.issue_items || [];
             const $itemsContainer = $('#popup-items').empty();
@@ -199,14 +174,11 @@ jQuery(document).ready(function($) {
                 items.forEach(item => {
                     const attachment = item.attachment ? `<a href="${item.attachment}" target="_blank" class="text-blue-600 hover:underline">دانلود</a>` : 'بدون فایل';
                     $itemsContainer.append(
-                        `<div class="ticket-popup__item-card">` +
-                            `<div class="ticket-popup__item-image">${attachment !== 'بدون فایل' ? '<span>تصویر کالا</span>' : 'تصویر کالا'}</div>` +
-                            `<div>` +
-                                `<p class="ticket-popup__item-title">${item.product_name || ''}</p>` +
-                                `<p class="ticket-popup__item-meta">تعداد: ${item.quantity || '-'} | نوع درخواست: ${item.issue_type || '-'}</p>` +
-                                `<p class="ticket-popup__item-description">${item.issue_description || ''}</p>` +
-                                `${item.attachment ? `<a class="ticket-popup__item-attachment" href="${item.attachment}" target="_blank">تصویر محصول</a>` : ''}` +
-                            `</div>` +
+                        `<div class="border border-gray-200 p-3 rounded">` +
+                            `<p class="font-semibold">${item.product_name || ''} (تعداد: ${item.quantity || '-'} )</p>` +
+                            `<p class="text-sm text-gray-700 mt-1">${item.issue_type || ''}</p>` +
+                            `<p class="text-sm text-gray-600 mt-1">${item.issue_description || ''}</p>` +
+                            `<p class="text-sm text-gray-600 mt-2">${attachment}</p>` +
                         `</div>`
                     );
                 });
