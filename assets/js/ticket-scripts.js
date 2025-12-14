@@ -9,6 +9,60 @@ jQuery(document).ready(function($) {
         }
     });
 
+    function refreshRemoveButtons() {
+        const rows = $('#issue-items .issue-item-row');
+        rows.each(function(index) {
+            const removeBtn = $(this).find('.remove-issue-row');
+            if (index === 0) {
+                removeBtn.addClass('hidden');
+            } else {
+                removeBtn.removeClass('hidden');
+            }
+        });
+    }
+
+    function addIssueRow() {
+        const $rows = $('#issue-items .issue-item-row');
+        const $newRow = $rows.first().clone();
+        $newRow.find('input[type="text"], input[type="number"], textarea').val('');
+        $newRow.find('select').prop('selectedIndex', 0);
+        $newRow.find('input[type="file"]').val('');
+        $('#issue-items').append($newRow);
+        refreshRemoveButtons();
+    }
+
+    refreshRemoveButtons();
+
+    $('#issue-items').on('click', '.add-issue-row', function() {
+        addIssueRow();
+    });
+
+    $('#issue-items').on('click', '.remove-issue-row', function() {
+        if ($('#issue-items .issue-item-row').length > 1) {
+            $(this).closest('.issue-item-row').remove();
+            refreshRemoveButtons();
+        }
+    });
+
+    $('#issue-items').on('change', '.issue-attachment', function() {
+        const file = this.files[0];
+        if (!file) {
+            return;
+        }
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('تنها امکان بارگذاری فرمت‌های رایج تصویر وجود دارد.');
+            this.value = '';
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            alert('حجم فایل ضمیمه نباید بیش از ۱۰ مگابایت باشد.');
+            this.value = '';
+        }
+    });
+
     // Handle ticket form submission with AJAX
     $('.ticket-form').on('submit', function(e) {
         e.preventDefault(); // Prevent default form submission
@@ -20,7 +74,7 @@ jQuery(document).ready(function($) {
         // Show loading state
         submitButton.prop('disabled', true);
         submitButton.text('در حال ارسال...');
-        
+
         $.ajax({
             url: window.location.href,
             type: 'POST',
@@ -31,18 +85,25 @@ jQuery(document).ready(function($) {
                 'X-Requested-With': 'XMLHttpRequest'
             },
             success: function(response) {
-                console.log('Ticket submitted successfully', response);
+                if (response && response.success === false) {
+                    const errorMessage = response.data && response.data.message ? response.data.message : 'خطا در ارسال درخواست. لطفاً دوباره تلاش کنید.';
+                    alert(errorMessage);
+                    submitButton.prop('disabled', false);
+                    submitButton.text('ارسال درخواست');
+                    return;
+                }
 
-                // Redirect immediately after successful submission
-                window.location.href = 'https://dede.ir/all-tickets/';
+                $('#ticket-success-overlay').removeClass('hidden').addClass('flex');
 
-                // Reset button state
-                submitButton.prop('disabled', false);
-                submitButton.text('ارسال درخواست');
+                setTimeout(function() {
+                    window.location.href = 'https://dede.ir/all-tickets/';
+                }, 1200);
             },
             error: function(xhr, status, error) {
                 console.log('Error submitting ticket', error);
-                alert('خطا در ارسال درخواست. لطفاً دوباره تلاش کنید.');
+                const responseJSON = xhr.responseJSON || {};
+                const message = (responseJSON.data && responseJSON.data.message) || responseJSON.message || 'خطا در ارسال درخواست. لطفاً دوباره تلاش کنید.';
+                alert(message);
 
                 // Reset button state
                 submitButton.prop('disabled', false);
@@ -95,9 +156,27 @@ jQuery(document).ready(function($) {
         const details = $(this).data('ticket-details');
         const ticketId = $(this).data('ticket-id');
         if (details) {
-            const summaryText = `درخواست شما به شماره ${details.ticket_number} برای شماره سفارش ${details.order_number} که در تاریخ ${details.order_date} انجام و توسط ${details.delivery_method} دریافت کرده اید ثبت شده است. نوع مشکل را ${details.issue_type} گزارش داده اید. درخواست شما هم اکنون در وضعیت ${details.status} می باشد.`;
+            const summaryText = `درخواست شما به شماره ${details.ticket_number} برای شماره سفارش ${details.order_number} که در تاریخ ${details.order_date} دریافت شده ثبت شده است. این درخواست هم اکنون در وضعیت ${details.status} می‌باشد.`;
             $('#popup-summary').text(summaryText);
             $('#ticket-id').val(ticketId);
+
+            const items = details.issue_items || [];
+            const $itemsContainer = $('#popup-items').empty();
+            if (items.length) {
+                items.forEach(item => {
+                    const attachment = item.attachment ? `<a href="${item.attachment}" target="_blank" class="text-blue-600 hover:underline">دانلود</a>` : 'بدون فایل';
+                    $itemsContainer.append(
+                        `<div class="border border-gray-200 p-3 rounded">` +
+                            `<p class="font-semibold">${item.product_name || ''} (تعداد: ${item.quantity || '-'} )</p>` +
+                            `<p class="text-sm text-gray-700 mt-1">${item.issue_type || ''}</p>` +
+                            `<p class="text-sm text-gray-600 mt-1">${item.issue_description || ''}</p>` +
+                            `<p class="text-sm text-gray-600 mt-2">${attachment}</p>` +
+                        `</div>`
+                    );
+                });
+            } else {
+                $itemsContainer.append('<p class="text-gray-500">مشخصات کالا ثبت نشده است.</p>');
+            }
 
             // Populate responses
             const $responsesContainer = $('#responses-container').empty();
