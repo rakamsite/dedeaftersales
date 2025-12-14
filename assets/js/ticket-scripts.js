@@ -156,7 +156,15 @@ jQuery(document).ready(function($) {
         const details = $(this).data('ticket-details');
         const ticketId = $(this).data('ticket-id');
         if (details) {
-            const summaryText = `درخواست شما به شماره ${details.ticket_number} برای شماره سفارش ${details.order_number} که در تاریخ ${details.order_date} دریافت شده ثبت شده است. این درخواست هم اکنون در وضعیت ${details.status} می‌باشد.`;
+            const ticketNumber = details.ticket_number || '-';
+            const orderNumber = details.order_number || '-';
+            const orderDate = details.order_date || '-';
+            const ticketStatus = details.status || '-';
+
+            $('#popup-ticket-number').text(ticketNumber);
+            $('#popup-order-number').text(orderNumber);
+            $('#popup-order-date').text(orderDate);
+            const summaryText = `درخواست شما به شماره ${ticketNumber} برای شماره سفارش ${orderNumber} که در تاریخ ${orderDate} دریافت شده ثبت شده است. این درخواست هم اکنون در وضعیت ${ticketStatus} می‌باشد.`;
             $('#popup-summary').text(summaryText);
             $('#ticket-id').val(ticketId);
 
