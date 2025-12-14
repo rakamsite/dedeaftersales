@@ -156,7 +156,35 @@ jQuery(document).ready(function($) {
         const details = $(this).data('ticket-details');
         const ticketId = $(this).data('ticket-id');
         if (details) {
+            const ticketNumber = details.ticket_number || '-';
+            const orderNumber = details.order_number || '-';
+            const orderDate = details.order_date || '-';
+            const ticketStatus = details.status || '-';
+
+            $('#popup-ticket-number').text(ticketNumber);
+            $('#popup-order-number').text(orderNumber);
+            $('#popup-order-date').text(orderDate);
+            const summaryText = `درخواست شما به شماره ${ticketNumber} برای شماره سفارش ${orderNumber} که در تاریخ ${orderDate} دریافت شده ثبت شده است. این درخواست هم اکنون در وضعیت ${ticketStatus} می‌باشد.`;
+            $('#popup-summary').text(summaryText);
             $('#ticket-id').val(ticketId);
+
+            const items = details.issue_items || [];
+            const $itemsContainer = $('#popup-items').empty();
+            if (items.length) {
+                items.forEach(item => {
+                    const attachment = item.attachment ? `<a href="${item.attachment}" target="_blank" class="text-blue-600 hover:underline">دانلود</a>` : 'بدون فایل';
+                    $itemsContainer.append(
+                        `<div class="border border-gray-200 p-3 rounded">` +
+                            `<p class="font-semibold">${item.product_name || ''} (تعداد: ${item.quantity || '-'} )</p>` +
+                            `<p class="text-sm text-gray-700 mt-1">${item.issue_type || ''}</p>` +
+                            `<p class="text-sm text-gray-600 mt-1">${item.issue_description || ''}</p>` +
+                            `<p class="text-sm text-gray-600 mt-2">${attachment}</p>` +
+                        `</div>`
+                    );
+                });
+            } else {
+                $itemsContainer.append('<p class="text-gray-500">مشخصات کالا ثبت نشده است.</p>');
+            }
 
             // Populate responses
             const $responsesContainer = $('#responses-container').empty();
@@ -172,6 +200,11 @@ jQuery(document).ready(function($) {
                 $responsesContainer.append('<p class="text-gray-500">هیچ پاسخی ثبت نشده است.</p>');
             }
 
+            if (details.attachment) {
+                $('#attachment-link').show().attr('href', details.attachment);
+            } else {
+                $('#attachment-link').hide();
+            }
             $('#ticket-popup').removeClass('hidden');
             
             // Scroll to bottom of responses container to show latest responses
