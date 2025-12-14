@@ -113,9 +113,25 @@ $tickets = new WP_Query($args);
 <!-- Popup for Ticket Details -->
 <div id="ticket-popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
     <div class="bg-white p-6 shadow-lg w-full h-full max-w-full relative dir-rtl overflow-y-auto">
-        <button id="close-popup" class="absolute top-4 left-4 text-gray-600 hover:text-gray-800" style="font-size: 60px;">×</button>
-        <h2 class="text-2xl font-bold mb-4 text-gray-800"><?php _e('جزئیات درخواست', 'simple-ticket'); ?></h2>
+        <div class="flex items-start justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-800"><?php _e('جزئیات درخواست', 'simple-ticket'); ?></h2>
+            <button id="close-popup" class="text-gray-600 hover:text-gray-800 text-4xl leading-none">×</button>
+        </div>
         <div class="space-y-4">
+            <div class="grid gap-4 sm:grid-cols-1 md:grid-cols-3">
+                <div class="flex rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
+                    <span class="bg-gray-200 text-gray-800 px-4 py-3 text-sm font-semibold whitespace-nowrap"><?php _e('شماره درخواست', 'simple-ticket'); ?></span>
+                    <span id="popup-ticket-number" class="px-4 py-3 text-gray-900 font-semibold">-</span>
+                </div>
+                <div class="flex rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
+                    <span class="bg-gray-200 text-gray-800 px-4 py-3 text-sm font-semibold whitespace-nowrap"><?php _e('شماره سفارش', 'simple-ticket'); ?></span>
+                    <span id="popup-order-number" class="px-4 py-3 text-gray-900 font-semibold">-</span>
+                </div>
+                <div class="flex rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
+                    <span class="bg-gray-200 text-gray-800 px-4 py-3 text-sm font-semibold whitespace-nowrap"><?php _e('تاریخ دریافت', 'simple-ticket'); ?></span>
+                    <span id="popup-order-date" class="px-4 py-3 text-gray-900 font-semibold">-</span>
+                </div>
+            </div>
             <p id="popup-summary" class="text-gray-700 leading-7"></p>
             <div id="popup-items" class="space-y-3"></div>
             <div id="responses-container" class="space-y-4">
