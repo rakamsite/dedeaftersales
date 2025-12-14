@@ -64,14 +64,31 @@ $tickets = new WP_Query($args);
                         </td>
                         <td class="border p-3 text-center">
                             <button class="text-blue-600 hover:underline view-ticket" data-ticket-id="<?php echo get_the_ID(); ?>" data-ticket-details='<?php
+                                $issue_items = get_post_meta(get_the_ID(), 'issue_items', true) ?: array();
+                                if (empty($issue_items)) {
+                                    $legacy_issue_type        = get_post_meta(get_the_ID(), 'issue_type', true);
+                                    $legacy_issue_description = get_post_meta(get_the_ID(), 'issue_description', true);
+                                    $legacy_attachment        = get_post_meta(get_the_ID(), 'attachment', true);
+
+                                    if ($legacy_issue_type || $legacy_issue_description || $legacy_attachment) {
+                                        $issue_items = array(
+                                            array(
+                                                'product_name'      => '',
+                                                'quantity'          => '',
+                                                'issue_type'        => $legacy_issue_type,
+                                                'issue_description' => $legacy_issue_description,
+                                                'attachment'        => $legacy_attachment,
+                                            ),
+                                        );
+                                    }
+                                }
+
                                 $details = array(
                                     'ticket_number' => get_post_meta(get_the_ID(), 'ticket_number', true),
                                     'order_number' => get_post_meta(get_the_ID(), 'order_number', true),
                                     'order_date' => get_post_meta(get_the_ID(), 'order_date', true),
-                                    'delivery_method' => get_post_meta(get_the_ID(), 'delivery_method', true),
-                                    'issue_type' => get_post_meta(get_the_ID(), 'issue_type', true),
                                     'issue_description' => get_post_meta(get_the_ID(), 'issue_description', true),
-                                    'attachment' => get_post_meta(get_the_ID(), 'attachment', true),
+                                    'issue_items' => $issue_items,
                                     'responses' => get_post_meta(get_the_ID(), 'responses', true) ?: array(), // همیشه همه پاسخ‌ها
                                     'status' => $statuses[$status] ?? __('نامشخص', 'simple-ticket'),
                                     'user_full_name' => $user_full_name,
@@ -100,9 +117,7 @@ $tickets = new WP_Query($args);
         <h2 class="text-2xl font-bold mb-4 text-gray-800"><?php _e('جزئیات درخواست', 'simple-ticket'); ?></h2>
         <div class="space-y-4">
             <p id="popup-summary" class="text-gray-700 leading-7"></p>
-            <?php if ($attachment = get_post_meta(get_the_ID(), 'attachment', true)): ?>
-                <p><span class="font-semibold"><?php _e('فایل ضمیمه:', 'simple-ticket'); ?></span> <a id="attachment-link" href="<?php echo esc_url($attachment); ?>" target="_blank" class="text-blue-600 hover:underline"><?php _e('دانلود', 'simple-ticket'); ?></a></p>
-            <?php endif; ?>
+            <div id="popup-items" class="space-y-3"></div>
             <div id="responses-container" class="space-y-4">
                 <!-- Responses will be populated by JavaScript -->
             </div>

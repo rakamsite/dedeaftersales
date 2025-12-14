@@ -130,11 +130,25 @@ function sts_render_ticket_meta_box($post) {
     $ticket_number      = get_post_meta($post->ID, 'ticket_number', true);
     $order_number       = get_post_meta($post->ID, 'order_number', true);
     $order_date         = get_post_meta($post->ID, 'order_date', true);
-    $delivery_method    = get_post_meta($post->ID, 'delivery_method', true);
-    $issue_type         = get_post_meta($post->ID, 'issue_type', true);
+    $issue_items        = get_post_meta($post->ID, 'issue_items', true) ?: array();
+    if (empty($issue_items)) {
+        $legacy_issue_type        = get_post_meta($post->ID, 'issue_type', true);
+        $legacy_issue_description = get_post_meta($post->ID, 'issue_description', true);
+        $legacy_attachment        = get_post_meta($post->ID, 'attachment', true);
+
+        if ($legacy_issue_type || $legacy_issue_description || $legacy_attachment) {
+            $issue_items = array(
+                array(
+                    'product_name'      => '',
+                    'quantity'          => '',
+                    'issue_type'        => $legacy_issue_type,
+                    'issue_description' => $legacy_issue_description,
+                    'attachment'        => $legacy_attachment,
+                ),
+            );
+        }
+    }
     $issue_description  = get_post_meta($post->ID, 'issue_description', true);
-    $response_pref      = get_post_meta($post->ID, 'response_preference', true);
-    $attachment         = get_post_meta($post->ID, 'attachment', true);
     $responses          = get_post_meta($post->ID, 'responses', true) ?: array();
     $ticket_status      = get_post_meta($post->ID, 'ticket_status', true);
 
@@ -152,20 +166,47 @@ function sts_render_ticket_meta_box($post) {
             <p>
                 <?php
                 printf(
-                    /* translators: 1: ticket number, 2: user full name, 3: order number, 4: order date, 5: delivery method, 6: issue type */
-                    __('این درخواست به شماره %1$s توسط %2$s برای شماره سفارش %3$s که در تاریخ %4$s انجام و توسط %5$s دریافت شده بود ثبت شده است. کاربر نوع مشکل را %6$s اعلام کرده است.', 'simple-ticket'),
+                    /* translators: 1: ticket number, 2: user full name, 3: order number, 4: order date, 5: issues count */
+                    __('این درخواست به شماره %1$s توسط %2$s برای شماره سفارش %3$s که در تاریخ %4$s دریافت شده ثبت شده است. این درخواست شامل %5$s مورد مشکل ثبت‌شده است.', 'simple-ticket'),
                     esc_html($ticket_number),
                     esc_html($user_fullname),
                     esc_html($order_number),
                     esc_html($order_date),
-                    esc_html($delivery_method),
-                    esc_html($issue_type)
+                    esc_html(count($issue_items))
                 );
                 ?>
             </p>
         </div>
-        <?php if ($attachment) : ?>
-            <p><label><?php _e('فایل ضمیمه:', 'simple-ticket'); ?></label><a href="<?php echo esc_url($attachment); ?>" target="_blank"><?php _e('دانلود فایل', 'simple-ticket'); ?></a></p>
+
+        <?php if (!empty($issue_items)) : ?>
+            <table class="widefat striped" style="margin-top:10px">
+                <thead>
+                    <tr>
+                        <th><?php _e('نام محصول', 'simple-ticket'); ?></th>
+                        <th><?php _e('تعداد', 'simple-ticket'); ?></th>
+                        <th><?php _e('نوع مشکل', 'simple-ticket'); ?></th>
+                        <th><?php _e('شرح مشکل', 'simple-ticket'); ?></th>
+                        <th><?php _e('ضمیمه', 'simple-ticket'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($issue_items as $item) : ?>
+                        <tr>
+                            <td><?php echo esc_html($item['product_name'] ?? ''); ?></td>
+                            <td><?php echo esc_html($item['quantity'] ?? ''); ?></td>
+                            <td><?php echo esc_html($item['issue_type'] ?? ''); ?></td>
+                            <td><?php echo esc_html($item['issue_description'] ?? ''); ?></td>
+                            <td>
+                                <?php if (!empty($item['attachment'])) : ?>
+                                    <a href="<?php echo esc_url($item['attachment']); ?>" target="_blank"><?php _e('دانلود', 'simple-ticket'); ?></a>
+                                <?php else : ?>
+                                    <?php _e('بدون فایل', 'simple-ticket'); ?>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         <?php endif; ?>
 
         <div class="sts-responses">
@@ -261,10 +302,82 @@ function sts_handle_ticket_submission() {
 
         $order_number        = sanitize_text_field($_POST['order_number']);
         $order_date          = sanitize_text_field($_POST['order_date']);
-        $delivery_method     = sanitize_text_field($_POST['delivery_method']);
-        $issue_type          = sanitize_text_field($_POST['issue_type']);
-        $issue_description   = sanitize_textarea_field($_POST['issue_description']);
-        $response_preference = sanitize_text_field($_POST['response_preference']);
+
+        $product_names       = isset($_POST['product_name']) && is_array($_POST['product_name']) ? array_map('sanitize_text_field', $_POST['product_name']) : array();
+        $quantities          = isset($_POST['quantity']) && is_array($_POST['quantity']) ? array_map('intval', $_POST['quantity']) : array();
+        $issue_types         = isset($_POST['issue_type']) && is_array($_POST['issue_type']) ? array_map('sanitize_text_field', $_POST['issue_type']) : array();
+        $issue_descriptions  = isset($_POST['issue_description']) && is_array($_POST['issue_description']) ? array_map('sanitize_textarea_field', $_POST['issue_description']) : array();
+
+        $allowed_file_types  = array('image/jpeg', 'image/png', 'image/gif');
+        $attachments         = $_FILES['attachment'] ?? array();
+        $issue_items         = array();
+        $collected_files     = array();
+        $validation_error    = '';
+
+        foreach ($product_names as $index => $product_name) {
+            $quantity          = $quantities[$index] ?? '';
+            $issue_type        = $issue_types[$index] ?? '';
+            $issue_description = $issue_descriptions[$index] ?? '';
+
+            if ($product_name === '' && $quantity === '' && $issue_type === '' && $issue_description === '') {
+                continue;
+            }
+
+            if ($product_name === '' || $quantity === '' || $issue_type === '' || $issue_description === '') {
+                $validation_error = __('لطفاً تمام فیلدهای هر ردیف مشکل را تکمیل کنید.', 'simple-ticket');
+                break;
+            }
+
+            if ((int) $quantity <= 0) {
+                $validation_error = __('تعداد کالا باید بزرگ‌تر از صفر باشد.', 'simple-ticket');
+                break;
+            }
+
+            $issue_items[$index] = array(
+                'product_name'      => $product_name,
+                'quantity'          => $quantity,
+                'issue_type'        => $issue_type,
+                'issue_description' => $issue_description,
+                'attachment'        => '',
+            );
+
+            if (!empty($attachments['name'][$index])) {
+                $file = array(
+                    'name'     => $attachments['name'][$index],
+                    'type'     => $attachments['type'][$index],
+                    'tmp_name' => $attachments['tmp_name'][$index],
+                    'error'    => $attachments['error'][$index],
+                    'size'     => $attachments['size'][$index],
+                );
+
+                if (!empty($file['error'])) {
+                    $validation_error = __('بارگذاری فایل با خطا مواجه شد.', 'simple-ticket');
+                    break;
+                }
+
+                if ($file['size'] > 10 * 1024 * 1024) {
+                    $validation_error = __('حجم فایل ضمیمه نباید بیش از ۱۰ مگابایت باشد.', 'simple-ticket');
+                    break;
+                }
+
+                $filetype = wp_check_filetype_and_ext($file['tmp_name'], $file['name']);
+                if (empty($filetype['type']) || !in_array($filetype['type'], $allowed_file_types, true)) {
+                    $validation_error = __('تنها امکان بارگذاری فرمت‌های رایج تصویر وجود دارد.', 'simple-ticket');
+                    break;
+                }
+
+                $collected_files[$index] = $file;
+            }
+        }
+
+        if ($validation_error || empty($issue_items)) {
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                wp_send_json_error(array('message' => $validation_error ?: __('لطفاً حداقل یک مشکل را وارد کنید.', 'simple-ticket')));
+            }
+
+            wp_redirect(add_query_arg('ticket_error', 'true', wp_get_referer()));
+            exit();
+        }
 
         $last_ticket_number = (int) get_option('sts_last_ticket_number', 0);
         $new_ticket_number  = sprintf('CSR%04d', $last_ticket_number + 1);
@@ -281,12 +394,34 @@ function sts_handle_ticket_submission() {
             update_post_meta($ticket_id, 'ticket_number', $new_ticket_number);
             update_post_meta($ticket_id, 'order_number', $order_number);
             update_post_meta($ticket_id, 'order_date', $order_date);
-            update_post_meta($ticket_id, 'delivery_method', $delivery_method);
-            update_post_meta($ticket_id, 'issue_type', $issue_type);
-            update_post_meta($ticket_id, 'issue_description', $issue_description);
-            update_post_meta($ticket_id, 'response_preference', $response_preference);
             update_post_meta($ticket_id, 'ticket_status', 'new');
             update_post_meta($ticket_id, 'user_id', get_current_user_id());
+
+            foreach ($issue_items as $index => &$item) {
+                if (isset($collected_files[$index])) {
+                    $file           = $collected_files[$index];
+                    $attachment_id  = media_handle_sideload($file, $ticket_id);
+                    if (!is_wp_error($attachment_id)) {
+                        $item['attachment'] = wp_get_attachment_url($attachment_id);
+                    }
+                }
+            }
+            unset($item);
+
+            update_post_meta($ticket_id, 'issue_items', $issue_items);
+
+            $compiled_description = array();
+            foreach ($issue_items as $item) {
+                $compiled_description[] = sprintf(
+                    __('%1$s (تعداد: %2$s) - %3$s: %4$s', 'simple-ticket'),
+                    $item['product_name'],
+                    $item['quantity'],
+                    $item['issue_type'],
+                    $item['issue_description']
+                );
+            }
+            $compiled_description_text = implode("\n", $compiled_description);
+            update_post_meta($ticket_id, 'issue_description', $compiled_description_text);
             update_post_meta(
                 $ticket_id,
                 'responses',
@@ -294,17 +429,10 @@ function sts_handle_ticket_submission() {
                     array(
                         'author'  => 'user',
                         'date'    => current_time('Y-m-d H:i:s'),
-                        'message' => $issue_description,
+                        'message' => $compiled_description_text,
                     ),
                 )
             );
-
-            if (!empty($_FILES['attachment']['name'])) {
-                $attachment_id = media_handle_upload('attachment', $ticket_id);
-                if (!is_wp_error($attachment_id)) {
-                    update_post_meta($ticket_id, 'attachment', wp_get_attachment_url($attachment_id));
-                }
-            }
 
             $user = get_userdata(get_current_user_id());
             if ($user) {
