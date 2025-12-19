@@ -156,7 +156,7 @@ $tickets = new WP_Query($args);
                 <input type="hidden" name="ticket_id" id="ticket-id">
                 <input type="hidden" id="user_response_nonce" value="<?php echo wp_create_nonce('submit_user_response'); ?>">
                 <textarea name="user_response" id="user_response" class="w-full border border-gray-300 rounded-lg p-4 h-32 focus:ring-2 focus:ring-indigo-700 focus:border-indigo-700" placeholder="<?php _e('پاسخ خود را بنویسید...', 'simple-ticket'); ?>"></textarea>
-                <button type="submit" class="w-full bg-indigo-800 text-white py-3 rounded-lg hover:bg-indigo-900 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-800">
+                <button type="submit" class="bg-[#2F2483] w-full rounded-lg h-fit text-white flex py-3 px-5 mt-1/2 justify-center">
                     <?php _e('ارسال پاسخ', 'simple-ticket'); ?>
                 </button>
             </form>
