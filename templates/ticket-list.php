@@ -112,38 +112,23 @@ $tickets = new WP_Query($args);
 
 <!-- Popup for Ticket Details -->
 <div id="ticket-popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white p-6 shadow-lg w-full h-full max-w-full relative dir-rtl overflow-y-auto">
-        <div class="flex items-start justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-800"><?php _e('جزئیات درخواست', 'simple-ticket'); ?></h2>
-            <button id="close-popup" class="text-gray-600 hover:text-gray-800 text-4xl leading-none">×</button>
+    <div class="bg-white p-6 shadow-lg w-full max-w-5xl relative dir-rtl rounded-2xl">
+        <div class="flex items-start justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-800"><?php _e('مشاهده درخواست', 'simple-ticket'); ?></h2>
+            <button id="close-popup" class="text-gray-600 hover:text-gray-800 text-3xl leading-none">×</button>
         </div>
         <div class="space-y-4">
-            <div class="grid gap-4 sm:grid-cols-1 md:grid-cols-3">
-                <div class="flex rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
-                    <span class="bg-gray-200 text-gray-800 px-4 py-3 text-sm font-semibold whitespace-nowrap"><?php _e('شماره درخواست', 'simple-ticket'); ?></span>
-                    <span id="popup-ticket-number" class="px-4 py-3 text-gray-900 font-semibold">-</span>
-                </div>
-                <div class="flex rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
-                    <span class="bg-gray-200 text-gray-800 px-4 py-3 text-sm font-semibold whitespace-nowrap"><?php _e('شماره سفارش', 'simple-ticket'); ?></span>
-                    <span id="popup-order-number" class="px-4 py-3 text-gray-900 font-semibold">-</span>
-                </div>
-                <div class="flex rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
-                    <span class="bg-gray-200 text-gray-800 px-4 py-3 text-sm font-semibold whitespace-nowrap"><?php _e('تاریخ دریافت', 'simple-ticket'); ?></span>
-                    <span id="popup-order-date" class="px-4 py-3 text-gray-900 font-semibold">-</span>
-                </div>
-            </div>
-            <p id="popup-summary" class="text-gray-700 leading-7"></p>
-            <div id="popup-items" class="space-y-3"></div>
-            <div id="responses-container" class="space-y-4">
+            <div id="responses-container" class="border border-gray-200 rounded-xl h-96 overflow-y-auto p-4 text-gray-800 space-y-4 bg-white">
                 <!-- Responses will be populated by JavaScript -->
             </div>
-            <form method="post" class="mt-4 user-response-form">
+            <form method="post" class="user-response-form space-y-3">
                 <?php wp_nonce_field('submit_user_response', 'user_response_nonce'); ?>
                 <input type="hidden" name="ticket_id" id="ticket-id">
                 <input type="hidden" id="user_response_nonce" value="<?php echo wp_create_nonce('submit_user_response'); ?>">
-                <label for="user_response" class="block text-sm font-medium text-gray-700"><?php _e('پاسخ شما:', 'simple-ticket'); ?></label>
-                <textarea name="user_response" id="user_response" class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3"></textarea>
-                <button type="submit" class="mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"><?php _e('ارسال پاسخ', 'simple-ticket'); ?></button>
+                <textarea name="user_response" id="user_response" class="w-full border border-gray-300 rounded-lg p-4 h-32 focus:ring-2 focus:ring-indigo-700 focus:border-indigo-700" placeholder="<?php _e('پاسخ خود را بنویسید...', 'simple-ticket'); ?>"></textarea>
+                <button type="submit" class="w-full bg-indigo-800 text-white py-3 rounded-lg hover:bg-indigo-900 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-800">
+                    <?php _e('ارسال پاسخ', 'simple-ticket'); ?>
+                </button>
             </form>
         </div>
     </div>
