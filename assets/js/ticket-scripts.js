@@ -150,6 +150,62 @@ jQuery(document).ready(function($) {
         });
     }
 
+    function populateIssueItems(issueItems, issueDescription) {
+        const $issueContainer = $('#issue-items-container').empty();
+        const normalizedItems = Array.isArray(issueItems) ? issueItems : [];
+
+        if (normalizedItems.length === 0 && issueDescription) {
+            $issueContainer.append(
+                $('<div class="border border-gray-200 rounded-lg p-4 bg-gray-50 text-gray-700"></div>')
+                    .text(issueDescription)
+            );
+            return;
+        }
+
+        if (normalizedItems.length === 0) {
+            $issueContainer.append('<p class="text-gray-500">جزئیاتی برای این درخواست ثبت نشده است.</p>');
+            return;
+        }
+
+        normalizedItems.forEach((item, index) => {
+            const $card = $('<div class="border border-gray-200 rounded-lg p-4 bg-gray-50 space-y-2"></div>');
+            const title = item.product_name ? item.product_name : `مورد ${index + 1}`;
+            $('<p class="text-base font-semibold text-gray-800"></p>').text(title).appendTo($card);
+
+            const $grid = $('<div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700"></div>');
+            $('<div></div>').text(`تعداد: ${item.quantity || 'نامشخص'}`).appendTo($grid);
+            $('<div></div>').text(`نوع مشکل: ${item.issue_type || 'نامشخص'}`).appendTo($grid);
+            $grid.appendTo($card);
+
+            if (item.issue_description) {
+                $('<p class="text-sm text-gray-600"></p>').text(item.issue_description).appendTo($card);
+            }
+
+            if (item.attachment) {
+                const $link = $('<a class="text-indigo-700 hover:text-indigo-900 text-sm font-medium" target="_blank" rel="noopener noreferrer"></a>');
+                $link.attr('href', item.attachment);
+                $link.text('مشاهده یا دانلود ضمیمه');
+                $card.append($link);
+            }
+
+            $issueContainer.append($card);
+        });
+    }
+
+    function populateResponses(responses, userFullName) {
+        const $responsesContainer = $('#responses-container').empty();
+        if (responses && responses.length > 0) {
+            responses.forEach(response => {
+                const author = response.author === 'admin' ? 'پشتیبان' : userFullName;
+                $responsesContainer.append(
+                    `<p class="border border-gray-200 p-3 rounded"><strong>${author}:</strong><br>${response.message}</p>`
+                );
+            });
+        } else {
+            $responsesContainer.append('<p class="text-gray-500">هیچ پاسخی ثبت نشده است.</p>');
+        }
+    }
+
     // Handle popup open
     $('.view-ticket').on('click', function() {
         console.log('View ticket clicked'); // For debugging
@@ -157,20 +213,14 @@ jQuery(document).ready(function($) {
         const ticketId = $(this).data('ticket-id');
         if (details) {
             $('#ticket-id').val(ticketId);
+            $('#ticket-number').text(details.ticket_number || '-');
+            $('#ticket-status').text(details.status || '-');
+            $('#order-number').text(details.order_number || '-');
+            $('#order-date').text(details.order_date || '-');
+            $('#ticket-owner').text(details.user_full_name ? `ثبت‌کننده: ${details.user_full_name}` : '');
 
-            // Populate responses
-            const $responsesContainer = $('#responses-container').empty();
-            const userFullName = details.user_full_name || 'کاربر'; // استفاده از نام و نام خانوادگی
-            if (details.responses && details.responses.length > 0) {
-                details.responses.forEach(response => {
-                    const author = response.author === 'admin' ? 'پشتیبان' : userFullName;
-                    $responsesContainer.append(
-                        `<p class="border border-gray-200 p-3 rounded"><strong>${author}:</strong><br>${response.message}</p>`
-                    );
-                });
-            } else {
-                $responsesContainer.append('<p class="text-gray-500">هیچ پاسخی ثبت نشده است.</p>');
-            }
+            populateIssueItems(details.issue_items, details.issue_description);
+            populateResponses(details.responses, details.user_full_name || 'کاربر');
 
             $('#ticket-popup').removeClass('hidden');
             
