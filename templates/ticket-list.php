@@ -63,7 +63,7 @@ $tickets = new WP_Query($args);
                             ?>
                         </td>
                         <td class="border p-3 text-center">
-                            <button class="text-blue-600 hover:underline view-ticket" data-ticket-id="<?php echo get_the_ID(); ?>" data-ticket-details="<?php
+                            <button class="text-blue-600 hover:underline view-ticket" data-ticket-id="<?php echo get_the_ID(); ?>" data-ticket-details='<?php
                                 $issue_items = get_post_meta(get_the_ID(), 'issue_items', true) ?: array();
                                 if (empty($issue_items)) {
                                     $legacy_issue_type        = get_post_meta(get_the_ID(), 'issue_type', true);
@@ -93,8 +93,8 @@ $tickets = new WP_Query($args);
                                     'status' => $statuses[$status] ?? __('نامشخص', 'simple-ticket'),
                                     'user_full_name' => $user_full_name,
                                 );
-                                echo esc_attr(wp_json_encode($details));
-                            ?>">
+                                echo esc_attr(json_encode($details));
+                            ?>'>
                                 <?php _e('مشاهده', 'simple-ticket'); ?>
                             </button>
                         </td>
