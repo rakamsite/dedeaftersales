@@ -118,20 +118,20 @@ $tickets = new WP_Query($args);
             <button id="close-popup" class="text-gray-600 hover:text-gray-800 text-3xl leading-none">×</button>
         </div>
         <div class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="ticket-summary">
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-0" id="ticket-summary">
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-0">
                     <p class="text-sm text-gray-500"><?php _e('شماره درخواست', 'simple-ticket'); ?></p>
                     <p id="ticket-number" class="text-lg font-semibold text-gray-800"></p>
                 </div>
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-0">
                     <p class="text-sm text-gray-500"><?php _e('وضعیت', 'simple-ticket'); ?></p>
                     <p id="ticket-status" class="text-lg font-semibold text-gray-800"></p>
                 </div>
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-0">
                     <p class="text-sm text-gray-500"><?php _e('شماره سفارش یا فاکتور', 'simple-ticket'); ?></p>
                     <p id="order-number" class="text-lg font-semibold text-gray-800"></p>
                 </div>
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-0">
                     <p class="text-sm text-gray-500"><?php _e('تاریخ دریافت سفارش', 'simple-ticket'); ?></p>
                     <p id="order-date" class="text-lg font-semibold text-gray-800"></p>
                 </div>
