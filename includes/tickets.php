@@ -369,15 +369,13 @@ function sts_handle_ticket_submission() {
                 break;
             }
 
-            $issue_items[] = array(
+            $issue_items[$index] = array(
                 'product_name'      => $product_name,
                 'quantity'          => $quantity,
                 'issue_type'        => $issue_type,
                 'issue_description' => $issue_description,
                 'attachment'        => '',
             );
-
-            $current_item_index = count($issue_items) - 1;
 
             if (!empty($attachments['name'][$index])) {
                 $file = array(
@@ -404,7 +402,7 @@ function sts_handle_ticket_submission() {
                     break;
                 }
 
-                $collected_files[$current_item_index] = $file;
+                $collected_files[$index] = $file;
             }
         }
 
@@ -446,7 +444,7 @@ function sts_handle_ticket_submission() {
             }
             unset($item);
 
-            update_post_meta($ticket_id, 'issue_items', array_values($issue_items));
+            update_post_meta($ticket_id, 'issue_items', $issue_items);
 
             $compiled_description = array();
             foreach ($issue_items as $item) {
