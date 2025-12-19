@@ -117,10 +117,40 @@ $tickets = new WP_Query($args);
             <h2 class="text-xl font-bold text-gray-800"><?php _e('مشاهده درخواست', 'simple-ticket'); ?></h2>
             <button id="close-popup" class="text-gray-600 hover:text-gray-800 text-3xl leading-none">×</button>
         </div>
-        <div class="space-y-4">
-            <div id="responses-container" class="border border-gray-200 rounded-xl h-96 overflow-y-auto p-4 text-gray-800 space-y-4 bg-white">
+        <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="ticket-summary">
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <p class="text-sm text-gray-500"><?php _e('شماره درخواست', 'simple-ticket'); ?></p>
+                    <p id="ticket-number" class="text-lg font-semibold text-gray-800"></p>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <p class="text-sm text-gray-500"><?php _e('وضعیت', 'simple-ticket'); ?></p>
+                    <p id="ticket-status" class="text-lg font-semibold text-gray-800"></p>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <p class="text-sm text-gray-500"><?php _e('شماره سفارش یا فاکتور', 'simple-ticket'); ?></p>
+                    <p id="order-number" class="text-lg font-semibold text-gray-800"></p>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <p class="text-sm text-gray-500"><?php _e('تاریخ دریافت سفارش', 'simple-ticket'); ?></p>
+                    <p id="order-date" class="text-lg font-semibold text-gray-800"></p>
+                </div>
+            </div>
+
+            <div class="border border-gray-200 rounded-xl p-4 bg-white space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800"><?php _e('جزئیات مشکلات ثبت‌شده', 'simple-ticket'); ?></h3>
+                    <span id="ticket-owner" class="text-sm text-gray-500"></span>
+                </div>
+                <div id="issue-items-container" class="space-y-3">
+                    <!-- Issue items will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="border border-gray-200 rounded-xl h-96 overflow-y-auto p-4 text-gray-800 space-y-4 bg-white" id="responses-container">
                 <!-- Responses will be populated by JavaScript -->
             </div>
+
             <form method="post" class="user-response-form space-y-3">
                 <?php wp_nonce_field('submit_user_response', 'user_response_nonce'); ?>
                 <input type="hidden" name="ticket_id" id="ticket-id">
