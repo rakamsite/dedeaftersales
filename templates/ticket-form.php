@@ -82,9 +82,9 @@ HTML;
         <button type="submit" class="mt-6 w-full bg-[#2f2483] text-white py-3 rounded-md hover:bg-[#ed1c24] focus:outline-none focus:ring-2 focus:ring-[#2f2483]"><?php _e('ارسال درخواست', 'simple-ticket'); ?></button>
     </form>
 
-    <div id="ticket-success-overlay" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-[300px] h-[300px] max-w-[90vw] max-h-[90vh] text-center flex flex-col justify-between">
-            <p class="text-lg font-semibold text-gray-800 mt-4"><?php _e('درخواست شما با موفقیت ثبت شد و به زودی بررسی میگردد.', 'simple-ticket'); ?></p>
+    <div id="ticket-success-overlay" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="ticket-success-message">
+        <div class="bg-white p-6 rounded-lg shadow-lg text-center flex flex-col justify-between" style="width: 300px; height: 300px; max-width: 90vw; max-height: 90vh;">
+            <p id="ticket-success-message" class="text-lg font-semibold text-gray-800 mt-4"><?php _e('درخواست شما با موفقیت ثبت شد و به زودی بررسی میگردد.', 'simple-ticket'); ?></p>
             <button type="button" id="ticket-success-close" class="w-full bg-[#2f2483] text-white py-3 rounded-md hover:bg-[#ed1c24] focus:outline-none focus:ring-2 focus:ring-[#2f2483]">
                 <?php _e('متوجه شدم', 'simple-ticket'); ?>
             </button>
