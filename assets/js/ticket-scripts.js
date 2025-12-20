@@ -94,10 +94,8 @@ jQuery(document).ready(function($) {
                 }
 
                 $('#ticket-success-overlay').removeClass('hidden').addClass('flex');
-
-                setTimeout(function() {
-                    window.location.href = 'https://dede.ir/all-tickets/';
-                }, 1200);
+                submitButton.prop('disabled', false);
+                submitButton.text('ارسال درخواست');
             },
             error: function(xhr, status, error) {
                 console.log('Error submitting ticket', error);
@@ -111,6 +109,10 @@ jQuery(document).ready(function($) {
             }
         });
         return false; // Extra safeguard to prevent full page reload
+    });
+
+    $('#ticket-success-close').on('click', function() {
+        $('#ticket-success-overlay').addClass('hidden').removeClass('flex');
     });
 
     // Function to refresh ticket data via AJAX

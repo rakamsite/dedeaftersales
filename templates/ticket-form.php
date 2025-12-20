@@ -82,11 +82,12 @@ HTML;
         <button type="submit" class="mt-6 w-full bg-[#2f2483] text-white py-3 rounded-md hover:bg-[#ed1c24] focus:outline-none focus:ring-2 focus:ring-[#2f2483]"><?php _e('ارسال درخواست', 'simple-ticket'); ?></button>
     </form>
 
-    <div id="ticket-success-overlay" class="fixed inset-0 bg-black bg-opacity-20 hidden items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
-            <p class="text-lg font-semibold text-gray-800 mb-2"><?php _e('درخواست شما با موفقیت ثبت شد.', 'simple-ticket'); ?></p>
-            <p class="text-sm text-gray-600"><?php _e('درحال بارگذاری همه درخواست ها...', 'simple-ticket'); ?></p>
+    <div id="ticket-success-overlay" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-[300px] h-[300px] max-w-[90vw] max-h-[90vh] text-center flex flex-col justify-between">
+            <p class="text-lg font-semibold text-gray-800 mt-4"><?php _e('درخواست شما با موفقیت ثبت شد و به زودی بررسی میگردد.', 'simple-ticket'); ?></p>
+            <button type="button" id="ticket-success-close" class="w-full bg-[#2f2483] text-white py-3 rounded-md hover:bg-[#ed1c24] focus:outline-none focus:ring-2 focus:ring-[#2f2483]">
+                <?php _e('متوجه شدم', 'simple-ticket'); ?>
+            </button>
         </div>
     </div>
 </div>
-
