@@ -28,7 +28,7 @@ HTML;
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="order_number" class="block text-sm font-medium text-gray-700"><?php _e('شماره سفارش یا فاکتور', 'simple-ticket'); ?></label>
-                <input type="text" name="order_number" id="order_number" required class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <input type="number" name="order_number" id="order_number" required inputmode="numeric" pattern="[0-9]*" class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
             <div>
                 <label for="order_date" class="block text-sm font-medium text-gray-700"><?php _e('تاریخ دریافت سفارش', 'simple-ticket'); ?></label>

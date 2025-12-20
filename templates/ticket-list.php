@@ -63,38 +63,11 @@ $tickets = new WP_Query($args);
                             ?>
                         </td>
                         <td class="border p-3 text-center">
-                            <button class="text-blue-600 hover:underline view-ticket" data-ticket-id="<?php echo get_the_ID(); ?>" data-ticket-details='<?php
-                                $issue_items = get_post_meta(get_the_ID(), 'issue_items', true) ?: array();
-                                if (empty($issue_items)) {
-                                    $legacy_issue_type        = get_post_meta(get_the_ID(), 'issue_type', true);
-                                    $legacy_issue_description = get_post_meta(get_the_ID(), 'issue_description', true);
-                                    $legacy_attachment        = get_post_meta(get_the_ID(), 'attachment', true);
-
-                                    if ($legacy_issue_type || $legacy_issue_description || $legacy_attachment) {
-                                        $issue_items = array(
-                                            array(
-                                                'product_name'      => '',
-                                                'quantity'          => '',
-                                                'issue_type'        => $legacy_issue_type,
-                                                'issue_description' => $legacy_issue_description,
-                                                'attachment'        => $legacy_attachment,
-                                            ),
-                                        );
-                                    }
-                                }
-
-                                $details = array(
-                                    'ticket_number' => get_post_meta(get_the_ID(), 'ticket_number', true),
-                                    'order_number' => get_post_meta(get_the_ID(), 'order_number', true),
-                                    'order_date' => get_post_meta(get_the_ID(), 'order_date', true),
-                                    'issue_description' => get_post_meta(get_the_ID(), 'issue_description', true),
-                                    'issue_items' => $issue_items,
-                                    'responses' => get_post_meta(get_the_ID(), 'responses', true) ?: array(), // همیشه همه پاسخ‌ها
-                                    'status' => $statuses[$status] ?? __('نامشخص', 'simple-ticket'),
-                                    'user_full_name' => $user_full_name,
-                                );
-                                echo esc_attr(json_encode($details));
-                            ?>'>
+                            <button
+                                class="text-blue-600 hover:underline view-ticket"
+                                data-ticket-id="<?php echo get_the_ID(); ?>"
+                                data-ticket-nonce="<?php echo esc_attr(wp_create_nonce('get_ticket_details')); ?>"
+                            >
                                 <?php _e('مشاهده', 'simple-ticket'); ?>
                             </button>
                         </td>
