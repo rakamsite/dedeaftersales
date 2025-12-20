@@ -208,34 +208,64 @@ jQuery(document).ready(function($) {
         }
     }
 
+    function setTicketLoadingState() {
+        $('#ticket-number').text('...');
+        $('#ticket-status').text('...');
+        $('#order-number').text('...');
+        $('#order-date').text('...');
+        $('#ticket-owner').text('');
+        $('#issue-items-container').html('<p class="text-gray-500">در حال دریافت جزئیات...</p>');
+        $('#responses-container').html('<p class="text-gray-500">در حال دریافت پاسخ‌ها...</p>');
+    }
+
+    function openTicketPopup(details, ticketId) {
+        $('#ticket-id').val(ticketId);
+        $('#ticket-number').text(details.ticket_number || '-');
+        $('#ticket-status').text(details.status || '-');
+        $('#order-number').text(details.order_number || '-');
+        $('#order-date').text(details.order_date || '-');
+        $('#ticket-owner').text(details.user_full_name ? `ثبت‌کننده: ${details.user_full_name}` : '');
+
+        populateIssueItems(details.issue_items, details.issue_description);
+        populateResponses(details.responses, details.user_full_name || 'کاربر');
+
+        $('#ticket-popup').removeClass('hidden');
+
+        setTimeout(function() {
+            const $responsesContainer = $('#responses-container');
+            if ($responsesContainer.length) {
+                $responsesContainer.scrollTop($responsesContainer[0].scrollHeight);
+            }
+        }, 100);
+    }
+
     // Handle popup open
     $('.view-ticket').on('click', function() {
-        console.log('View ticket clicked'); // For debugging
-        const details = $(this).data('ticket-details');
         const ticketId = $(this).data('ticket-id');
-        if (details) {
-            $('#ticket-id').val(ticketId);
-            $('#ticket-number').text(details.ticket_number || '-');
-            $('#ticket-status').text(details.status || '-');
-            $('#order-number').text(details.order_number || '-');
-            $('#order-date').text(details.order_date || '-');
-            $('#ticket-owner').text(details.user_full_name ? `ثبت‌کننده: ${details.user_full_name}` : '');
+        const ticketNonce = $(this).data('ticket-nonce');
 
-            populateIssueItems(details.issue_items, details.issue_description);
-            populateResponses(details.responses, details.user_full_name || 'کاربر');
+        $('#ticket-popup').removeClass('hidden');
+        setTicketLoadingState();
 
-            $('#ticket-popup').removeClass('hidden');
-            
-            // Scroll to bottom of responses container to show latest responses
-            setTimeout(function() {
-                const $responsesContainer = $('#responses-container');
-                if ($responsesContainer.length) {
-                    $responsesContainer.scrollTop($responsesContainer[0].scrollHeight);
+        $.ajax({
+            url: ajaxurl || '/wp-admin/admin-ajax.php',
+            type: 'POST',
+            data: {
+                action: 'get_ticket_details',
+                ticket_id: ticketId,
+                nonce: ticketNonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    openTicketPopup(response.data, ticketId);
+                } else {
+                    $('#issue-items-container').html('<p class="text-red-600">خطا در دریافت جزئیات درخواست.</p>');
                 }
-            }, 100);
-        } else {
-            console.log('No ticket details found');
-        }
+            },
+            error: function() {
+                $('#issue-items-container').html('<p class="text-red-600">خطا در ارتباط با سرور.</p>');
+            }
+        });
     });
 
     // Handle popup close

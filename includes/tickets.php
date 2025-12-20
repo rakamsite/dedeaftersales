@@ -336,7 +336,7 @@ function sts_handle_ticket_submission() {
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/image.php';
 
-        $order_number        = sanitize_text_field($_POST['order_number']);
+        $order_number        = isset($_POST['order_number']) ? preg_replace('/\D+/', '', (string) $_POST['order_number']) : '';
         $order_date          = sanitize_text_field($_POST['order_date']);
 
         $product_names       = isset($_POST['product_name']) && is_array($_POST['product_name']) ? array_map('sanitize_text_field', $_POST['product_name']) : array();
@@ -404,6 +404,10 @@ function sts_handle_ticket_submission() {
 
                 $collected_files[$index] = $file;
             }
+        }
+
+        if ($order_number === '') {
+            $validation_error = __('شماره سفارش یا فاکتور باید فقط شامل عدد باشد.', 'simple-ticket');
         }
 
         if ($validation_error || empty($issue_items)) {
@@ -570,6 +574,82 @@ function sts_get_ticket_responses() {
 }
 add_action('wp_ajax_get_ticket_responses', 'sts_get_ticket_responses');
 add_action('wp_ajax_nopriv_get_ticket_responses', 'sts_get_ticket_responses');
+
+/**
+ * AJAX handler for fetching ticket details.
+ */
+function sts_get_ticket_details() {
+    if (!is_user_logged_in()) {
+        wp_send_json_error(array('message' => __('دسترسی غیرمجاز.', 'simple-ticket')));
+    }
+
+    $ticket_id = isset($_POST['ticket_id']) ? intval($_POST['ticket_id']) : 0;
+    $nonce     = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+
+    if (!$ticket_id || !wp_verify_nonce($nonce, 'get_ticket_details')) {
+        wp_send_json_error(array('message' => __('درخواست نامعتبر است.', 'simple-ticket')));
+    }
+
+    $ticket = get_post($ticket_id);
+    if (!$ticket || $ticket->post_type !== 'ticket') {
+        wp_send_json_error(array('message' => __('درخواست یافت نشد.', 'simple-ticket')));
+    }
+
+    $current_user_id = get_current_user_id();
+    if ((int) $ticket->post_author !== $current_user_id) {
+        wp_send_json_error(array('message' => __('دسترسی غیرمجاز.', 'simple-ticket')));
+    }
+
+    $issue_items = get_post_meta($ticket_id, 'issue_items', true) ?: array();
+    if (empty($issue_items)) {
+        $legacy_issue_type        = get_post_meta($ticket_id, 'issue_type', true);
+        $legacy_issue_description = get_post_meta($ticket_id, 'issue_description', true);
+        $legacy_attachment        = get_post_meta($ticket_id, 'attachment', true);
+
+        if ($legacy_issue_type || $legacy_issue_description || $legacy_attachment) {
+            $issue_items = array(
+                array(
+                    'product_name'      => '',
+                    'quantity'          => '',
+                    'issue_type'        => $legacy_issue_type,
+                    'issue_description' => $legacy_issue_description,
+                    'attachment'        => $legacy_attachment,
+                ),
+            );
+        }
+    }
+
+    $statuses = array(
+        'new'       => __('جدید', 'simple-ticket'),
+        'reviewed'  => __('بررسی شده', 'simple-ticket'),
+        'responded' => __('پاسخ داده شده', 'simple-ticket'),
+        'closed'    => __('بسته شده', 'simple-ticket'),
+    );
+
+    $user_id = $ticket->post_author;
+    $user    = get_userdata($user_id);
+    $first   = get_user_meta($user_id, 'first_name', true);
+    $last    = get_user_meta($user_id, 'last_name', true);
+    $full    = trim($first . ' ' . $last);
+    if (empty($full) && $user) {
+        $full = $user->user_login;
+    }
+
+    $details = array(
+        'ticket_number'     => get_post_meta($ticket_id, 'ticket_number', true),
+        'order_number'      => get_post_meta($ticket_id, 'order_number', true),
+        'order_date'        => get_post_meta($ticket_id, 'order_date', true),
+        'issue_description' => get_post_meta($ticket_id, 'issue_description', true),
+        'issue_items'       => $issue_items,
+        'responses'         => get_post_meta($ticket_id, 'responses', true) ?: array(),
+        'status'            => $statuses[get_post_meta($ticket_id, 'ticket_status', true)] ?? __('نامشخص', 'simple-ticket'),
+        'user_full_name'    => $full,
+    );
+
+    wp_send_json_success($details);
+}
+add_action('wp_ajax_get_ticket_details', 'sts_get_ticket_details');
+add_action('wp_ajax_nopriv_get_ticket_details', 'sts_get_ticket_details');
 
 function sts_add_ajax_url() {
     ?>
