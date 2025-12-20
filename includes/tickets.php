@@ -433,12 +433,23 @@ function sts_handle_ticket_submission() {
             update_post_meta($ticket_id, 'ticket_status', 'new');
             update_post_meta($ticket_id, 'user_id', get_current_user_id());
 
+            $uploaded_attachments = array();
             foreach ($issue_items as $index => &$item) {
                 if (isset($collected_files[$index])) {
                     $file           = $collected_files[$index];
+                    $tmp_name       = $file['tmp_name'] ?? '';
+                    if ($tmp_name && isset($uploaded_attachments[$tmp_name])) {
+                        $item['attachment'] = $uploaded_attachments[$tmp_name];
+                        continue;
+                    }
+
                     $attachment_id  = media_handle_sideload($file, $ticket_id);
                     if (!is_wp_error($attachment_id)) {
-                        $item['attachment'] = wp_get_attachment_url($attachment_id);
+                        $attachment_url      = wp_get_attachment_url($attachment_id);
+                        $item['attachment']  = $attachment_url;
+                        if ($tmp_name) {
+                            $uploaded_attachments[$tmp_name] = $attachment_url;
+                        }
                     }
                 }
             }
