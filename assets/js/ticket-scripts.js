@@ -93,9 +93,7 @@ jQuery(document).ready(function($) {
                     return;
                 }
 
-                $('#ticket-success-overlay').removeClass('hidden').addClass('flex');
-                submitButton.prop('disabled', false);
-                submitButton.text('ارسال درخواست');
+                window.location.href = 'https://dede.ir/ticket-ok/';
             },
             error: function(xhr, status, error) {
                 console.log('Error submitting ticket', error);
