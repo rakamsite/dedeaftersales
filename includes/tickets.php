@@ -291,10 +291,12 @@ function sts_save_ticket_meta($post_id) {
             $user_id = get_post_meta($post_id, 'user_id', true);
             $user    = get_userdata($user_id);
             if ($user) {
-                $ticket_number = get_post_meta($post_id, 'ticket_number', true);
-                $subject       = __('به‌روزرسانی وضعیت درخواست', 'simple-ticket');
-                $message       = sprintf(__('وضعیت درخواست شماره %s به %s تغییر یافت. پاسخ: %s', 'simple-ticket'), $ticket_number, __('پاسخ داده شده', 'simple-ticket'), $admin_response);
-                wp_mail($user->user_email, $subject, $message);
+                $message = sts_build_ticket_notification_message($post_id, array(
+                    'type'           => 'admin_response',
+                    'status'         => __('پاسخ داده شده', 'simple-ticket'),
+                    'admin_response' => $admin_response,
+                ));
+                sts_send_ticket_notification($post_id, $message);
             }
         }
     }
@@ -307,21 +309,246 @@ function sts_save_ticket_meta($post_id) {
             $user_id = get_post_meta($post_id, 'user_id', true);
             $user    = get_userdata($user_id);
             if ($user) {
-                $ticket_number = get_post_meta($post_id, 'ticket_number', true);
-                $statuses      = array(
+                $statuses = array(
                     'new'       => __('جدید', 'simple-ticket'),
                     'reviewed'  => __('بررسی شده', 'simple-ticket'),
                     'responded' => __('پاسخ داده شده', 'simple-ticket'),
                     'closed'    => __('بسته شده', 'simple-ticket'),
                 );
-                $subject = __('به‌روزرسانی وضعیت درخواست', 'simple-ticket');
-                $message = sprintf(__('وضعیت درخواست شماره %s به %s تغییر یافت.', 'simple-ticket'), $ticket_number, $statuses[$new_status]);
-                wp_mail($user->user_email, $subject, $message);
+                $message = sts_build_ticket_notification_message($post_id, array(
+                    'type'   => 'status_change',
+                    'status' => $statuses[$new_status],
+                ));
+                sts_send_ticket_notification($post_id, $message);
             }
         }
     }
 }
 add_action('save_post', 'sts_save_ticket_meta');
+
+/**
+ * Send a unified ticket notification to admin and user.
+ *
+ * @param int    $ticket_id Ticket ID.
+ * @param string $message   Message body.
+ * @return void
+ */
+function sts_send_ticket_notification($ticket_id, $message) {
+    $ticket_number = get_post_meta($ticket_id, 'ticket_number', true);
+    $subject       = $ticket_number;
+
+    $admin_email = get_option('sts_admin_email', get_option('admin_email'));
+    $user_id     = get_post_meta($ticket_id, 'user_id', true);
+    $user        = get_userdata($user_id);
+
+    $recipients = array_filter(array(
+        $admin_email,
+        $user ? $user->user_email : '',
+    ));
+    $recipients = array_unique($recipients);
+
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+
+    foreach ($recipients as $recipient) {
+        wp_mail($recipient, $subject, $message, $headers);
+    }
+}
+
+/**
+ * Build a unified ticket notification email message.
+ *
+ * @param int   $ticket_id Ticket ID.
+ * @param array $context   Context details.
+ * @return string
+ */
+function sts_build_ticket_notification_message($ticket_id, $context = array()) {
+    $ticket_number = get_post_meta($ticket_id, 'ticket_number', true);
+    $order_number  = get_post_meta($ticket_id, 'order_number', true);
+    $order_date    = get_post_meta($ticket_id, 'order_date', true);
+    $issue_items   = get_post_meta($ticket_id, 'issue_items', true) ?: array();
+    $responses     = get_post_meta($ticket_id, 'responses', true) ?: array();
+    $ticket_status = get_post_meta($ticket_id, 'ticket_status', true);
+
+    $user_id    = get_post_meta($ticket_id, 'user_id', true);
+    $user       = get_userdata($user_id);
+    $first_name = get_user_meta($user_id, 'first_name', true);
+    $last_name  = get_user_meta($user_id, 'last_name', true);
+    $full_name  = trim($first_name . ' ' . $last_name);
+    if (empty($full_name)) {
+        $full_name = $user ? $user->user_login : __('کاربر', 'simple-ticket');
+    }
+
+    $statuses = array(
+        'new'       => __('جدید', 'simple-ticket'),
+        'reviewed'  => __('بررسی شده', 'simple-ticket'),
+        'responded' => __('پاسخ داده شده', 'simple-ticket'),
+        'closed'    => __('بسته شده', 'simple-ticket'),
+    );
+    $status_label = $statuses[$ticket_status] ?? __('نامشخص', 'simple-ticket');
+
+    $card_style        = 'background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(15,23,42,0.06);';
+    $section_title     = 'font-size:16px;font-weight:700;color:#0f172a;margin:0 0 12px;';
+    $label_style       = 'font-size:13px;color:#6b7280;margin-bottom:4px;';
+    $value_style       = 'font-size:15px;color:#111827;font-weight:600;margin:0;';
+    $badge_style       = 'display:inline-block;background:#e0f2fe;color:#075985;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;';
+    $item_box_style    = 'background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:10px;';
+    $response_box      = 'border-right:3px solid #38bdf8;background:#f0f9ff;padding:12px;border-radius:10px;margin-bottom:10px;';
+    $response_meta     = 'font-size:12px;color:#475569;margin-bottom:6px;';
+    $response_message  = 'font-size:14px;color:#0f172a;margin:0;white-space:pre-wrap;';
+
+    $status_text = $context['status'] ?? $status_label;
+    $issue_rows  = '';
+    foreach ($issue_items as $item) {
+        $product_name = esc_html($item['product_name'] ?? '');
+        $quantity     = esc_html($item['quantity'] ?? '');
+        $issue_type   = esc_html($item['issue_type'] ?? '');
+        $description  = esc_html($item['issue_description'] ?? '');
+        $attachment   = !empty($item['attachment']) ? esc_url($item['attachment']) : '';
+        $attachment_link = $attachment ? sprintf('<a href="%s" style="color:#2563eb;text-decoration:none;">%s</a>', $attachment, esc_html__('دانلود ضمیمه', 'simple-ticket')) : esc_html__('بدون فایل', 'simple-ticket');
+
+        $issue_rows .= sprintf(
+            '<div style="%1$s">
+                <p style="margin:0 0 6px;font-size:15px;font-weight:600;color:#0f172a;">%2$s</p>
+                <p style="margin:0;font-size:13px;color:#64748b;">%3$s: %4$s | %5$s: %6$s</p>
+                <p style="margin:8px 0 0;font-size:13px;color:#475569;">%7$s</p>
+                <p style="margin:8px 0 0;font-size:13px;">%8$s</p>
+            </div>',
+            $item_box_style,
+            $product_name,
+            esc_html__('تعداد', 'simple-ticket'),
+            $quantity,
+            esc_html__('نوع مشکل', 'simple-ticket'),
+            $issue_type,
+            $description,
+            $attachment_link
+        );
+    }
+
+    if ($issue_rows === '') {
+        $issue_rows = sprintf('<p style="margin:0;font-size:14px;color:#64748b;">%s</p>', esc_html__('موردی ثبت نشده است.', 'simple-ticket'));
+    }
+
+    $responses_html = '';
+    if (!empty($responses)) {
+        foreach ($responses as $response) {
+            $author_label = $response['author'] === 'admin' ? __('ادمین', 'simple-ticket') : $full_name;
+            $date_label   = $response['date'] ?? '';
+            $message_text = $response['message'] ?? '';
+
+            $responses_html .= sprintf(
+                '<div style="%1$s">
+                    <div style="%2$s">%3$s | %4$s</div>
+                    <p style="%5$s">%6$s</p>
+                </div>',
+                $response_box,
+                $response_meta,
+                esc_html($author_label),
+                esc_html($date_label),
+                $response_message,
+                esc_html($message_text)
+            );
+        }
+    } else {
+        $responses_html = sprintf('<p style="margin:0;font-size:14px;color:#64748b;">%s</p>', esc_html__('هنوز پاسخی ثبت نشده است.', 'simple-ticket'));
+    }
+
+    $highlight_block = '';
+    if (!empty($context['admin_response'])) {
+        $highlight_block .= sprintf(
+            '<div style="%1$s">
+                <div style="%2$s">%3$s</div>
+                <p style="%4$s">%5$s</p>
+            </div>',
+            $response_box,
+            $response_meta,
+            esc_html__('آخرین پاسخ ادمین', 'simple-ticket'),
+            $response_message,
+            esc_html($context['admin_response'])
+        );
+    }
+    if (!empty($context['user_response'])) {
+        $highlight_block .= sprintf(
+            '<div style="%1$s">
+                <div style="%2$s">%3$s</div>
+                <p style="%4$s">%5$s</p>
+            </div>',
+            $response_box,
+            $response_meta,
+            esc_html__('آخرین پاسخ کاربر', 'simple-ticket'),
+            $response_message,
+            esc_html($context['user_response'])
+        );
+    }
+
+    $html = sprintf(
+        '<div dir="rtl" style="background:#f8fafc;padding:24px;font-family:%1$s;">
+            <div style="max-width:720px;margin:0 auto;%2$s">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
+                    <div>
+                        <p style="margin:0;font-size:20px;font-weight:800;color:#0f172a;">%3$s</p>
+                        <p style="margin:6px 0 0;font-size:13px;color:#64748b;">%4$s</p>
+                    </div>
+                    <span style="%5$s">%6$s</span>
+                </div>
+
+                <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+                    <div style="flex:1 1 220px;background:#f1f5f9;border-radius:10px;padding:12px;">
+                        <p style="%7$s">%8$s</p>
+                        <p style="%9$s">%10$s</p>
+                    </div>
+                    <div style="flex:1 1 220px;background:#f1f5f9;border-radius:10px;padding:12px;">
+                        <p style="%7$s">%11$s</p>
+                        <p style="%9$s">%12$s</p>
+                    </div>
+                    <div style="flex:1 1 220px;background:#f1f5f9;border-radius:10px;padding:12px;">
+                        <p style="%7$s">%13$s</p>
+                        <p style="%9$s">%14$s</p>
+                    </div>
+                </div>
+
+                %15$s
+
+                <div style="margin-top:20px;">
+                    <p style="%16$s">%17$s</p>
+                    %18$s
+                </div>
+
+                <div style="margin-top:20px;">
+                    <p style="%16$s">%19$s</p>
+                    %20$s
+                </div>
+
+                <div style="margin-top:20px;text-align:center;font-size:12px;color:#94a3b8;">
+                    %21$s
+                </div>
+            </div>
+        </div>',
+        "'Vazirmatn','IRANSans','Segoe UI',Tahoma,sans-serif",
+        $card_style,
+        esc_html(sprintf(__('گزارش مکاتبات درخواست %s', 'simple-ticket'), $ticket_number)),
+        esc_html(__('این ایمیل شامل تمام مکاتبات و وضعیت فعلی درخواست شماست.', 'simple-ticket')),
+        $badge_style,
+        esc_html($status_text),
+        $label_style,
+        esc_html__('ثبت‌کننده', 'simple-ticket'),
+        $value_style,
+        esc_html($full_name),
+        $label_style,
+        esc_html__('شماره سفارش/فاکتور', 'simple-ticket'),
+        $value_style,
+        esc_html($order_number),
+        $highlight_block,
+        $section_title,
+        esc_html__('جزئیات مشکلات ثبت‌شده', 'simple-ticket'),
+        $issue_rows,
+        $section_title,
+        esc_html__('تاریخچه مکاتبات', 'simple-ticket'),
+        $responses_html,
+        esc_html__('لطفاً برای ادامه گفتگو همین ایمیل را پاسخ دهید تا همه موارد در یک رشته واحد باقی بماند.', 'simple-ticket')
+    );
+
+    return $html;
+}
 
 /**
  * Store ticket attachments outside of the WordPress media library.
@@ -500,15 +727,18 @@ function sts_handle_ticket_submission() {
             update_post_meta($ticket_id, 'issue_description', $compiled_description_text);
             $user = get_userdata(get_current_user_id());
             if ($user) {
-                $subject = sprintf(__('درخواست %s', 'simple-ticket'), $new_ticket_number);
-                $message = sprintf(__('درخواست شماره %s با موفقیت ثبت شد. وضعیت فعلی: %s', 'simple-ticket'), $new_ticket_number, __('جدید', 'simple-ticket'));
-                wp_mail($user->user_email, $subject, $message);
+                $message = sts_build_ticket_notification_message($ticket_id, array(
+                    'type'   => 'new_ticket',
+                    'status' => __('جدید', 'simple-ticket'),
+                ));
+                sts_send_ticket_notification($ticket_id, $message);
             }
 
-            $admin_email    = 'qc@ajaxir.com';
-            $admin_subject  = sprintf(__('درخواست %s', 'simple-ticket'), $new_ticket_number);
-            $admin_message  = __('درخواست یا پاسخی از جانب درخواست کننده خدمات پس از فروش ثبت شد. به پنل مدیریتی رجوع و در اسرع وقت پاسخ دهید.', 'simple-ticket');
-            wp_mail($admin_email, $admin_subject, $admin_message);
+            $admin_message = sts_build_ticket_notification_message($ticket_id, array(
+                'type'   => 'new_ticket',
+                'status' => __('جدید', 'simple-ticket'),
+            ));
+            sts_send_ticket_notification($ticket_id, $admin_message);
 
             if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
                 wp_send_json_success(
@@ -542,9 +772,11 @@ function sts_handle_ticket_submission() {
 
             $admin_email   = get_option('sts_admin_email', get_option('admin_email'));
             $ticket_number = get_post_meta($ticket_id, 'ticket_number', true);
-            $subject       = __('پاسخ جید کاربر برای درخواست', 'simple-ticket');
-            $message       = sprintf(__('کاربر پاسخی برای درخواست شماره %s ارسال کرده است: %s', 'simple-ticket'), $ticket_number, $user_response);
-            wp_mail($admin_email, $subject, $message);
+            $message       = sts_build_ticket_notification_message($ticket_id, array(
+                'type'          => 'user_response',
+                'user_response' => $user_response,
+            ));
+            sts_send_ticket_notification($ticket_id, $message);
 
             wp_redirect(add_query_arg('response_submitted', 'true', wp_get_referer()));
             exit();
