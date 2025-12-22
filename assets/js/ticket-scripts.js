@@ -141,11 +141,14 @@ jQuery(document).ready(function($) {
                                 `<p class="border border-gray-200 p-3 rounded"><strong>${author}:</strong><br>${response.message}</p>`
                             );
                         });
-                        
+
+                        applyResponsesMaxHeight($responsesContainer);
+
                         // Scroll to bottom to show latest response
                         $responsesContainer.scrollTop($responsesContainer[0].scrollHeight);
                     } else {
                         $responsesContainer.append('<p class="text-gray-500">هیچ پاسخی ثبت نشده است.</p>');
+                        applyResponsesMaxHeight($responsesContainer);
                     }
                 }
             },
@@ -153,6 +156,27 @@ jQuery(document).ready(function($) {
                 console.log('Error refreshing ticket data');
             }
         });
+    }
+
+    function applyResponsesMaxHeight($responsesContainer) {
+        const $responses = $responsesContainer.children('p');
+        if ($responses.length === 0) {
+            $responsesContainer.css('max-height', '');
+            return;
+        }
+
+        const responseCount = Math.min(2, $responses.length);
+        let maxHeight = 0;
+
+        for (let i = 0; i < responseCount; i += 1) {
+            maxHeight += $responses.eq(i).outerHeight(true);
+        }
+
+        const paddingTop = parseFloat($responsesContainer.css('padding-top')) || 0;
+        const paddingBottom = parseFloat($responsesContainer.css('padding-bottom')) || 0;
+
+        maxHeight += paddingTop + paddingBottom;
+        $responsesContainer.css('max-height', `${maxHeight}px`);
     }
 
     function populateIssueItems(issueItems, issueDescription) {
@@ -209,8 +233,10 @@ jQuery(document).ready(function($) {
                     `<p class="border border-gray-200 p-3 rounded"><strong>${author}:</strong><br>${response.message}</p>`
                 );
             });
+            applyResponsesMaxHeight($responsesContainer);
         } else {
             $responsesContainer.append('<p class="text-gray-500">هیچ پاسخی ثبت نشده است.</p>');
+            applyResponsesMaxHeight($responsesContainer);
         }
     }
 
