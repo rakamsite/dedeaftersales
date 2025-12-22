@@ -79,7 +79,7 @@ function sts_settings_page() {
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="admin_email"><?php _e('ایمیل ادمین برای نوتیفیکیشن:', 'simple-ticket'); ?></label>
+                        <label for="admin_email"><?php _e('ایمیل واحد پشتیبانی برای نوتیفیکیشن:', 'simple-ticket'); ?></label>
                     </th>
                     <td>
                         <input type="email" id="admin_email" name="admin_email" value="<?php echo esc_attr($admin_email); ?>" class="regular-text" />
@@ -247,11 +247,11 @@ function sts_render_ticket_meta_box($post) {
 
         <div class="sts-responses">
             <?php foreach ($responses as $response) : ?>
-                <p><strong><?php echo esc_html($response['author'] === 'admin' ? 'ادمین' : $user_fullname); ?> (<?php echo esc_html($response['date']); ?>):</strong><br><?php echo esc_textarea($response['message']); ?></p>
+                <p><strong><?php echo esc_html($response['author'] === 'admin' ? 'واحد پشتیبانی' : $user_fullname); ?> (<?php echo esc_html($response['date']); ?>):</strong><br><?php echo esc_textarea($response['message']); ?></p>
             <?php endforeach; ?>
         </div>
 
-        <p><label><?php _e('پاسخ ادمین:', 'simple-ticket'); ?></label><textarea name="admin_response"></textarea></p>
+        <p><label><?php _e('واحد پشتیبانی:', 'simple-ticket'); ?></label><textarea name="admin_response"></textarea></p>
         <p><label><?php _e('وضعیت درخواست:', 'simple-ticket'); ?></label>
             <select name="ticket_status">
                 <option value="new" <?php selected($ticket_status, 'new'); ?>><?php _e('جدید', 'simple-ticket'); ?></option>
@@ -415,7 +415,7 @@ function sts_build_ticket_notification_message($ticket_id, $context = array()) {
     $responses_html = '';
     if (!empty($responses)) {
         foreach ($responses as $response) {
-            $author_label = $response['author'] === 'admin' ? __('ادمین', 'simple-ticket') : $full_name;
+            $author_label = $response['author'] === 'admin' ? __('واحد پشتیبانی', 'simple-ticket') : $full_name;
             $date_label   = $response['date'] ?? '';
             $message_text = $response['message'] ?? '';
 
@@ -445,7 +445,7 @@ function sts_build_ticket_notification_message($ticket_id, $context = array()) {
             </div>',
             $response_box,
             $response_meta,
-            esc_html__('آخرین پاسخ ادمین', 'simple-ticket'),
+            esc_html__('آخرین واحد پشتیبانی', 'simple-ticket'),
             $response_message,
             esc_html($context['admin_response'])
         );
