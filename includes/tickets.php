@@ -324,6 +324,24 @@ function sts_save_ticket_meta($post_id) {
 add_action('save_post', 'sts_save_ticket_meta');
 
 /**
+ * Store ticket attachments outside of the WordPress media library.
+ *
+ * @param array $dirs Upload directory data.
+ * @return array
+ */
+function sts_ticket_upload_dir($dirs) {
+    $ticket_id = $GLOBALS['sts_current_ticket_id'] ?? 0;
+    $ticket_id = intval($ticket_id);
+    $subdir    = $ticket_id ? '/ticket-attachments/' . $ticket_id : '/ticket-attachments';
+
+    $dirs['subdir'] = $subdir;
+    $dirs['path']   = $dirs['basedir'] . $subdir;
+    $dirs['url']    = $dirs['baseurl'] . $subdir;
+
+    return $dirs;
+}
+
+/**
  * Handle front-end ticket submissions.
  */
 function sts_handle_ticket_submission() {
@@ -436,6 +454,7 @@ function sts_handle_ticket_submission() {
             update_post_meta($ticket_id, 'order_date', $order_date);
             update_post_meta($ticket_id, 'ticket_status', 'new');
             update_post_meta($ticket_id, 'user_id', get_current_user_id());
+            update_post_meta($ticket_id, 'issue_items', $issue_items);
 
             $uploaded_attachments = array();
             foreach ($issue_items as $index => &$item) {
@@ -447,12 +466,18 @@ function sts_handle_ticket_submission() {
                         continue;
                     }
 
-                    $attachment_id  = media_handle_sideload($file, $ticket_id);
-                    if (!is_wp_error($attachment_id)) {
-                        $attachment_url      = wp_get_attachment_url($attachment_id);
-                        $item['attachment']  = $attachment_url;
+                    $GLOBALS['sts_current_ticket_id'] = $ticket_id;
+                    add_filter('upload_dir', 'sts_ticket_upload_dir');
+
+                    $uploaded = wp_handle_upload($file, array('test_form' => false));
+
+                    remove_filter('upload_dir', 'sts_ticket_upload_dir');
+                    unset($GLOBALS['sts_current_ticket_id']);
+
+                    if (!empty($uploaded['url'])) {
+                        $item['attachment'] = $uploaded['url'];
                         if ($tmp_name) {
-                            $uploaded_attachments[$tmp_name] = $attachment_url;
+                            $uploaded_attachments[$tmp_name] = $uploaded['url'];
                         }
                     }
                 }
