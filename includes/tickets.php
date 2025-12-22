@@ -498,18 +498,6 @@ function sts_handle_ticket_submission() {
             }
             $compiled_description_text = implode("\n", $compiled_description);
             update_post_meta($ticket_id, 'issue_description', $compiled_description_text);
-            update_post_meta(
-                $ticket_id,
-                'responses',
-                array(
-                    array(
-                        'author'  => 'user',
-                        'date'    => current_time('Y-m-d H:i:s'),
-                        'message' => $compiled_description_text,
-                    ),
-                )
-            );
-
             $user = get_userdata(get_current_user_id());
             if ($user) {
                 $subject = sprintf(__('درخواست %s', 'simple-ticket'), $new_ticket_number);
@@ -593,6 +581,7 @@ function sts_get_ticket_responses() {
     wp_send_json_success(
         array(
             'responses'      => $responses,
+            'issue_description' => get_post_meta($ticket_id, 'issue_description', true),
             'user_full_name' => $fullname,
         )
     );
