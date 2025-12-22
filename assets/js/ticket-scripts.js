@@ -66,12 +66,6 @@ jQuery(document).ready(function($) {
     // Handle ticket form submission with AJAX
     $('.ticket-form').on('submit', function(e) {
         const form = $(this);
-        const hasAttachment = form.find('input[type="file"]').toArray().some(input => input.files && input.files.length > 0);
-
-        if (hasAttachment) {
-            return true;
-        }
-
         e.preventDefault(); // Prevent default form submission
 
         const submitButton = form.find('button[type="submit"]');

@@ -863,10 +863,23 @@ add_action('wp_head', 'sts_add_ajax_url');
  * Enqueue ticket assets.
  */
 function sts_enqueue_assets() {
+    $styles_version = '1.0';
+    $scripts_version = '1.0';
+    $styles_path = STS_PLUGIN_DIR . 'assets/css/ticket-styles.css';
+    $scripts_path = STS_PLUGIN_DIR . 'assets/js/ticket-scripts.js';
+
+    if (file_exists($styles_path)) {
+        $styles_version = (string) filemtime($styles_path);
+    }
+
+    if (file_exists($scripts_path)) {
+        $scripts_version = (string) filemtime($scripts_path);
+    }
+
     wp_enqueue_style('persian-datepicker', 'https://unpkg.com/persian-datepicker@latest/dist/css/persian-datepicker.min.css', array(), '1.0');
-    wp_enqueue_style('sts-styles', plugin_dir_url(STS_PLUGIN_FILE) . 'assets/css/ticket-styles.css', array(), '1.0');
+    wp_enqueue_style('sts-styles', plugin_dir_url(STS_PLUGIN_FILE) . 'assets/css/ticket-styles.css', array(), $styles_version);
     wp_enqueue_script('persian-datepicker', 'https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.min.js', array('jquery'), '1.0', true);
-    wp_enqueue_script('sts-scripts', plugin_dir_url(STS_PLUGIN_FILE) . 'assets/js/ticket-scripts.js', array('jquery', 'persian-datepicker'), '1.0', true);
+    wp_enqueue_script('sts-scripts', plugin_dir_url(STS_PLUGIN_FILE) . 'assets/js/ticket-scripts.js', array('jquery', 'persian-datepicker'), $scripts_version, true);
 }
 add_action('wp_enqueue_scripts', 'sts_enqueue_assets');
 
