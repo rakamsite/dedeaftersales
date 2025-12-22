@@ -126,11 +126,16 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     const responses = response.data.responses;
+                    const issueDescription = response.data.issue_description || '';
                     const $responsesContainer = $('#responses-container').empty();
                     const userFullName = response.data.user_full_name || 'کاربر';
                     
-                    if (responses && responses.length > 0) {
-                        responses.forEach(response => {
+                    const visibleResponses = (responses || []).filter(
+                        response => !(issueDescription && response.author === 'user' && response.message === issueDescription)
+                    );
+
+                    if (visibleResponses.length > 0) {
+                        visibleResponses.forEach(response => {
                             const author = response.author === 'admin' ? 'پشتیبان' : userFullName;
                             $responsesContainer.append(
                                 `<p class="border border-gray-200 p-3 rounded"><strong>${author}:</strong><br>${response.message}</p>`
@@ -192,10 +197,13 @@ jQuery(document).ready(function($) {
         });
     }
 
-    function populateResponses(responses, userFullName) {
+    function populateResponses(responses, userFullName, issueDescription) {
         const $responsesContainer = $('#responses-container').empty();
-        if (responses && responses.length > 0) {
-            responses.forEach(response => {
+        const visibleResponses = (responses || []).filter(
+            response => !(issueDescription && response.author === 'user' && response.message === issueDescription)
+        );
+        if (visibleResponses.length > 0) {
+            visibleResponses.forEach(response => {
                 const author = response.author === 'admin' ? 'پشتیبان' : userFullName;
                 $responsesContainer.append(
                     `<p class="border border-gray-200 p-3 rounded"><strong>${author}:</strong><br>${response.message}</p>`
@@ -225,7 +233,7 @@ jQuery(document).ready(function($) {
         $('#ticket-owner').text(details.user_full_name ? `ثبت‌کننده: ${details.user_full_name}` : '');
 
         populateIssueItems(details.issue_items, details.issue_description);
-        populateResponses(details.responses, details.user_full_name || 'کاربر');
+        populateResponses(details.responses, details.user_full_name || 'کاربر', details.issue_description || '');
 
         $('#ticket-popup').removeClass('hidden');
 
