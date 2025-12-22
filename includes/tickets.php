@@ -506,7 +506,7 @@ function sts_build_ticket_notification_message($ticket_id, $context = array()) {
         $issue_rows,
         esc_html__('تاریخچه گفتگو', 'simple-ticket'),
         $responses_html,
-        esc_html__('لطفاً برای ادامه گفتگو همین ایمیل را پاسخ دهید تا همه موارد در یک رشته واحد باقی بماند.', 'simple-ticket')
+        esc_html__('این ایمیل توسط سیستم خدمات پس از فروش سایت DeDe.ir ارسال گردیده است.', 'simple-ticket')
     );
 
     return $html;
@@ -687,20 +687,11 @@ function sts_handle_ticket_submission() {
             }
             $compiled_description_text = implode("\n", $compiled_description);
             update_post_meta($ticket_id, 'issue_description', $compiled_description_text);
-            $user = get_userdata(get_current_user_id());
-            if ($user) {
-                $message = sts_build_ticket_notification_message($ticket_id, array(
-                    'type'   => 'new_ticket',
-                    'status' => __('جدید', 'simple-ticket'),
-                ));
-                sts_send_ticket_notification($ticket_id, $message);
-            }
-
-            $admin_message = sts_build_ticket_notification_message($ticket_id, array(
+            $message = sts_build_ticket_notification_message($ticket_id, array(
                 'type'   => 'new_ticket',
                 'status' => __('جدید', 'simple-ticket'),
             ));
-            sts_send_ticket_notification($ticket_id, $admin_message);
+            sts_send_ticket_notification($ticket_id, $message);
 
             if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
                 wp_send_json_success(
