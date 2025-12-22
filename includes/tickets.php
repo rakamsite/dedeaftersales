@@ -530,7 +530,7 @@ function sts_handle_ticket_submission() {
                     )
                 );
             } else {
-                wp_redirect('https://dede.ir/ok-ticket');
+                wp_redirect('https://dede.ir/ticket-ok/');
                 exit();
             }
             return;
