@@ -120,7 +120,7 @@ $tickets = new WP_Query($args);
                 </div>
             </div>
 
-            <div class="border border-gray-200 rounded-xl h-96 overflow-y-auto p-4 text-gray-800 space-y-4 bg-white" id="responses-container">
+            <div class="border border-gray-200 rounded-xl overflow-y-auto p-4 text-gray-800 space-y-4 bg-white" id="responses-container">
                 <!-- Responses will be populated by JavaScript -->
             </div>
 
