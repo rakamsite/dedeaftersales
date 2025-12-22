@@ -67,33 +67,40 @@ jQuery(document).ready(function($) {
     $('.ticket-form').on('submit', function(e) {
         const form = $(this);
         e.preventDefault(); // Prevent default form submission
+        e.stopImmediatePropagation();
 
         const submitButton = form.find('button[type="submit"]');
         const formData = new FormData(form[0]);
+        formData.append('sts_ajax', '1');
+        if (typeof ajaxurl !== 'undefined') {
+            formData.append('action', 'sts_submit_ticket');
+        }
 
         // Show loading state
         submitButton.prop('disabled', true);
         submitButton.text('در حال ارسال...');
 
         $.ajax({
-            url: window.location.href,
+            url: typeof ajaxurl !== 'undefined' ? ajaxurl : window.location.href,
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
+            dataType: 'json',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             },
             success: function(response) {
-                if (response && response.success === false) {
-                    const errorMessage = response.data && response.data.message ? response.data.message : 'خطا در ارسال درخواست. لطفاً دوباره تلاش کنید.';
+                if (!response || response.success === false) {
+                    const errorMessage = response && response.data && response.data.message ? response.data.message : 'خطا در ارسال درخواست. لطفاً دوباره تلاش کنید.';
                     alert(errorMessage);
                     submitButton.prop('disabled', false);
                     submitButton.text('ارسال درخواست');
                     return;
                 }
 
-                window.location.href = 'https://dede.ir/ticket-ok/';
+                const redirectUrl = (response.data && response.data.redirect_url) || 'https://dede.ir/ticket-ok/';
+                window.location.href = redirectUrl;
             },
             error: function(xhr, status, error) {
                 console.log('Error submitting ticket', error);

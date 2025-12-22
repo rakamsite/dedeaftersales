@@ -533,6 +533,18 @@ function sts_ticket_upload_dir($dirs) {
 /**
  * Handle front-end ticket submissions.
  */
+function sts_is_ticket_ajax_request() {
+    if (isset($_POST['sts_ajax']) && $_POST['sts_ajax'] === '1') {
+        return true;
+    }
+
+    if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        return true;
+    }
+
+    return false;
+}
+
 function sts_handle_ticket_submission() {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST)) {
         return;
@@ -618,7 +630,7 @@ function sts_handle_ticket_submission() {
         }
 
         if ($validation_error || empty($issue_items)) {
-            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            if (sts_is_ticket_ajax_request()) {
                 wp_send_json_error(array('message' => $validation_error ?: __('لطفاً حداقل یک مشکل را وارد کنید.', 'simple-ticket')));
             }
 
@@ -693,11 +705,12 @@ function sts_handle_ticket_submission() {
             ));
             sts_send_ticket_notification($ticket_id, $message);
 
-            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            if (sts_is_ticket_ajax_request()) {
                 wp_send_json_success(
                     array(
                         'message'       => 'درخواست با موفقیت ثبت شد',
                         'ticket_number' => $new_ticket_number,
+                        'redirect_url'  => 'https://dede.ir/ticket-ok/',
                     )
                 );
             } else {
@@ -737,6 +750,8 @@ function sts_handle_ticket_submission() {
     }
 }
 add_action('init', 'sts_handle_ticket_submission');
+add_action('wp_ajax_sts_submit_ticket', 'sts_handle_ticket_submission');
+add_action('wp_ajax_nopriv_sts_submit_ticket', 'sts_handle_ticket_submission');
 
 /**
  * AJAX handler for fetching ticket responses.
