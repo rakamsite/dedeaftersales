@@ -362,12 +362,9 @@ function sts_send_ticket_notification($ticket_id, $message) {
  * @return string
  */
 function sts_build_ticket_notification_message($ticket_id, $context = array()) {
-    $ticket_number = get_post_meta($ticket_id, 'ticket_number', true);
     $order_number  = get_post_meta($ticket_id, 'order_number', true);
-    $order_date    = get_post_meta($ticket_id, 'order_date', true);
     $issue_items   = get_post_meta($ticket_id, 'issue_items', true) ?: array();
     $responses     = get_post_meta($ticket_id, 'responses', true) ?: array();
-    $ticket_status = get_post_meta($ticket_id, 'ticket_status', true);
 
     $user_id    = get_post_meta($ticket_id, 'user_id', true);
     $user       = get_userdata($user_id);
@@ -378,25 +375,12 @@ function sts_build_ticket_notification_message($ticket_id, $context = array()) {
         $full_name = $user ? $user->user_login : __('کاربر', 'simple-ticket');
     }
 
-    $statuses = array(
-        'new'       => __('جدید', 'simple-ticket'),
-        'reviewed'  => __('بررسی شده', 'simple-ticket'),
-        'responded' => __('پاسخ داده شده', 'simple-ticket'),
-        'closed'    => __('بسته شده', 'simple-ticket'),
-    );
-    $status_label = $statuses[$ticket_status] ?? __('نامشخص', 'simple-ticket');
-
     $card_style        = 'background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(15,23,42,0.06);';
-    $section_title     = 'font-size:16px;font-weight:700;color:#0f172a;margin:0 0 12px;';
-    $label_style       = 'font-size:13px;color:#6b7280;margin-bottom:4px;';
-    $value_style       = 'font-size:15px;color:#111827;font-weight:600;margin:0;';
-    $badge_style       = 'display:inline-block;background:#e0f2fe;color:#075985;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;';
     $item_box_style    = 'background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:10px;';
     $response_box      = 'border-right:3px solid #38bdf8;background:#f0f9ff;padding:12px;border-radius:10px;margin-bottom:10px;';
     $response_meta     = 'font-size:12px;color:#475569;margin-bottom:6px;';
     $response_message  = 'font-size:14px;color:#0f172a;margin:0;white-space:pre-wrap;';
 
-    $status_text = $context['status'] ?? $status_label;
     $issue_rows  = '';
     foreach ($issue_items as $item) {
         $product_name = esc_html($item['product_name'] ?? '');
@@ -481,68 +465,46 @@ function sts_build_ticket_notification_message($ticket_id, $context = array()) {
     }
 
     $html = sprintf(
-        '<div dir="rtl" style="background:#f8fafc;padding:24px;font-family:%1$s;">
-            <div style="max-width:720px;margin:0 auto;%2$s">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
-                    <div>
-                        <p style="margin:0;font-size:20px;font-weight:800;color:#0f172a;">%3$s</p>
-                        <p style="margin:6px 0 0;font-size:13px;color:#64748b;">%4$s</p>
+        '<div dir="rtl" style="background:#f8fafc;padding:24px;font-family:%s;">
+            <div style="max-width:720px;margin:0 auto;%s">
+                <div style="margin-bottom:20px;">
+                    <div style="background:#f1f5f9;border-radius:10px;padding:12px;margin-bottom:12px;">
+                        <p style="margin:0 0 6px;">%s</p>
+                        <p style="margin:0;">%s</p>
                     </div>
-                    <span style="%5$s">%6$s</span>
-                </div>
-
-                <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
-                    <div style="flex:1 1 220px;background:#f1f5f9;border-radius:10px;padding:12px;">
-                        <p style="%7$s">%8$s</p>
-                        <p style="%9$s">%10$s</p>
-                    </div>
-                    <div style="flex:1 1 220px;background:#f1f5f9;border-radius:10px;padding:12px;">
-                        <p style="%7$s">%11$s</p>
-                        <p style="%9$s">%12$s</p>
-                    </div>
-                    <div style="flex:1 1 220px;background:#f1f5f9;border-radius:10px;padding:12px;">
-                        <p style="%7$s">%13$s</p>
-                        <p style="%9$s">%14$s</p>
+                    <div style="background:#f1f5f9;border-radius:10px;padding:12px;">
+                        <p style="margin:0 0 6px;">%s</p>
+                        <p style="margin:0;">%s</p>
                     </div>
                 </div>
 
-                %15$s
+                %s
 
                 <div style="margin-top:20px;">
-                    <p style="%16$s">%17$s</p>
-                    %18$s
+                    <p>%s</p>
+                    %s
                 </div>
 
                 <div style="margin-top:20px;">
-                    <p style="%16$s">%19$s</p>
-                    %20$s
+                    <p>%s</p>
+                    %s
                 </div>
 
                 <div style="margin-top:20px;text-align:center;font-size:12px;color:#94a3b8;">
-                    %21$s
+                    %s
                 </div>
             </div>
         </div>',
         "'Vazirmatn','IRANSans','Segoe UI',Tahoma,sans-serif",
         $card_style,
-        esc_html(sprintf(__('گزارش مکاتبات درخواست %s', 'simple-ticket'), $ticket_number)),
-        esc_html(__('این ایمیل شامل تمام مکاتبات و وضعیت فعلی درخواست شماست.', 'simple-ticket')),
-        $badge_style,
-        esc_html($status_text),
-        $label_style,
         esc_html__('ثبت‌کننده', 'simple-ticket'),
-        $value_style,
         esc_html($full_name),
-        $label_style,
         esc_html__('شماره سفارش/فاکتور', 'simple-ticket'),
-        $value_style,
         esc_html($order_number),
         $highlight_block,
-        $section_title,
         esc_html__('جزئیات مشکلات ثبت‌شده', 'simple-ticket'),
         $issue_rows,
-        $section_title,
-        esc_html__('تاریخچه مکاتبات', 'simple-ticket'),
+        esc_html__('تاریخچه گفتگو', 'simple-ticket'),
         $responses_html,
         esc_html__('لطفاً برای ادامه گفتگو همین ایمیل را پاسخ دهید تا همه موارد در یک رشته واحد باقی بماند.', 'simple-ticket')
     );
