@@ -9,9 +9,17 @@
 input, select, textarea {
     @apply border border-gray-300 rounded-md p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
-/*button {
-    @apply bg-[#2f2483] text-white py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2f2483];
-    transition: background-color 0.3s ease; /* اضافه کردن انیمیشن برای هاور */
+
+.warranty-section {
+    @apply border border-gray-200 rounded-lg p-4 space-y-4;
+}
+
+.warranty-section-title {
+    @apply text-base font-semibold text-gray-800;
+}
+
+.warranty-hologram-preview img {
+    @apply w-full max-w-xs rounded-md border border-gray-200;
 }
 
 button:hover {
