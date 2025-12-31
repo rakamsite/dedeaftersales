@@ -11,9 +11,8 @@
         <?php wp_nonce_field('submit_warranty', 'warranty_nonce'); ?>
 
         <section class="warranty-section">
-            <h3 class="warranty-section-title"><?php _e('بخش A — انتخاب محصول', 'warranty-plugin'); ?></h3>
+            <h3 class="warranty-section-title"><?php _e('انتخاب محصول', 'warranty-plugin'); ?></h3>
             <div class="space-y-3">
-                <p class="text-sm font-medium text-gray-700"><?php _e('دسته محصول ⭐', 'warranty-plugin'); ?></p>
                 <div class="flex flex-col md:flex-row gap-4">
                     <label class="inline-flex items-center gap-2">
                         <input type="radio" name="product_category" value="part" required />
@@ -28,9 +27,9 @@
         </section>
 
         <section class="warranty-section">
-            <h3 class="warranty-section-title"><?php _e('بخش B — نوع محصول', 'warranty-plugin'); ?></h3>
+            <h3 class="warranty-section-title"><?php _e('نوع محصول', 'warranty-plugin'); ?></h3>
             <div id="warranty-section-part" class="space-y-4 hidden" data-warranty-section>
-                <label for="product_type" class="block text-sm font-medium text-gray-700"><?php _e('نوع محصول ⭐', 'warranty-plugin'); ?></label>
+                <label for="product_type" class="block text-sm font-medium text-gray-700"><?php _e('نوع محصول', 'warranty-plugin'); ?></label>
                 <select name="product_type" id="product_type" class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-required="true" disabled>
                     <option value=""><?php _e('انتخاب کنید', 'warranty-plugin'); ?></option>
                     <option value="مفصل فشار ضعیف رزینی (DJR01)"><?php _e('مفصل فشار ضعیف رزینی  (DJR01)', 'warranty-plugin'); ?></option>
@@ -46,7 +45,7 @@
             </div>
 
             <div id="warranty-section-tool" class="space-y-4 hidden" data-warranty-section>
-                <label for="device_type" class="block text-sm font-medium text-gray-700"><?php _e('نوع دستگاه ⭐', 'warranty-plugin'); ?></label>
+                <label for="device_type" class="block text-sm font-medium text-gray-700"><?php _e('نوع دستگاه', 'warranty-plugin'); ?></label>
                 <select name="device_type" id="device_type" class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-required="true" disabled>
                     <option value=""><?php _e('انتخاب کنید', 'warranty-plugin'); ?></option>
                     <option value="دستگاه پرس وایرشو و سرسیم پنوماتیک (PCM)"><?php _e('دستگاه پرس وایرشو و سرسیم پنوماتیک (PCM)', 'warranty-plugin'); ?></option>
@@ -58,12 +57,11 @@
         </section>
 
         <section class="warranty-section">
-            <h3 class="warranty-section-title"><?php _e('بخش C — اطلاعات هولوگرام', 'warranty-plugin'); ?></h3>
+            <h3 class="warranty-section-title"><?php _e('اطلاعات هولوگرام', 'warranty-plugin'); ?></h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 <div class="space-y-2">
-                    <label for="hologram_code" class="block text-sm font-medium text-gray-700"><?php _e('کد هولوگرام طلایی ⭐', 'warranty-plugin'); ?></label>
+                    <label for="hologram_code" class="block text-sm font-medium text-gray-700"><?php _e('کد هولوگرام طلایی', 'warranty-plugin'); ?></label>
                     <input type="text" name="hologram_code" id="hologram_code" inputmode="numeric" pattern="\d{6}" maxlength="6" minlength="6" required class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <p class="text-xs text-gray-500"><?php _e('کد ۶ رقمی درج‌شده روی هولوگرام طلایی الصاق‌شده به محصول را وارد نمایید.', 'warranty-plugin'); ?></p>
                 </div>
                 <?php $hologram_image = get_option('sts_hologram_sample_image'); ?>
                 <?php if (!empty($hologram_image)) : ?>
@@ -75,26 +73,26 @@
         </section>
 
         <section class="warranty-section">
-            <h3 class="warranty-section-title"><?php _e('بخش D — اطلاعات گارانتی', 'warranty-plugin'); ?></h3>
+            <h3 class="warranty-section-title"><?php _e('اطلاعات گارانتی', 'warranty-plugin'); ?></h3>
             <div id="warranty-fields-part" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden" data-warranty-fields>
                 <div>
-                    <label for="purchase_date_part" class="block text-sm font-medium text-gray-700"><?php _e('تاریخ خرید ⭐', 'warranty-plugin'); ?></label>
+                    <label for="purchase_date_part" class="block text-sm font-medium text-gray-700"><?php _e('تاریخ خرید', 'warranty-plugin'); ?></label>
                     <input type="text" name="purchase_date" id="purchase_date_part" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label for="installation_date" class="block text-sm font-medium text-gray-700"><?php _e('تاریخ نصب ⭐', 'warranty-plugin'); ?></label>
+                    <label for="installation_date" class="block text-sm font-medium text-gray-700"><?php _e('تاریخ نصب', 'warranty-plugin'); ?></label>
                     <input type="text" name="installation_date" id="installation_date" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label for="installation_location" class="block text-sm font-medium text-gray-700"><?php _e('محل نصب (نام پروژه) ⭐', 'warranty-plugin'); ?></label>
+                    <label for="installation_location" class="block text-sm font-medium text-gray-700"><?php _e('محل نصب (نام پروژه)', 'warranty-plugin'); ?></label>
                     <input type="text" name="installation_location" id="installation_location" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label for="installer_name" class="block text-sm font-medium text-gray-700"><?php _e('نام نصاب ⭐', 'warranty-plugin'); ?></label>
+                    <label for="installer_name" class="block text-sm font-medium text-gray-700"><?php _e('نام نصاب', 'warranty-plugin'); ?></label>
                     <input type="text" name="installer_name" id="installer_name" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label for="installer_phone" class="block text-sm font-medium text-gray-700"><?php _e('شماره همراه نصاب ⭐', 'warranty-plugin'); ?></label>
+                    <label for="installer_phone" class="block text-sm font-medium text-gray-700"><?php _e('شماره همراه نصاب', 'warranty-plugin'); ?></label>
                     <input type="text" name="installer_phone" id="installer_phone" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
@@ -102,22 +100,22 @@
                     <input type="email" name="installer_email" id="installer_email" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div class="md:col-span-2">
-                    <label for="installed_product_image" class="block text-sm font-medium text-gray-700"><?php _e('تصویر محصول نصب‌شده ⭐', 'warranty-plugin'); ?></label>
+                    <label for="installed_product_image" class="block text-sm font-medium text-gray-700"><?php _e('تصویر محصول نصب‌شده', 'warranty-plugin'); ?></label>
                     <input type="file" name="installed_product_image" id="installed_product_image" accept="image/*" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
 
             <div id="warranty-fields-tool" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden" data-warranty-fields>
                 <div>
-                    <label for="purchase_date_tool" class="block text-sm font-medium text-gray-700"><?php _e('تاریخ خرید ⭐', 'warranty-plugin'); ?></label>
+                    <label for="purchase_date_tool" class="block text-sm font-medium text-gray-700"><?php _e('تاریخ خرید', 'warranty-plugin'); ?></label>
                     <input type="text" name="purchase_date" id="purchase_date_tool" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label for="operator_name" class="block text-sm font-medium text-gray-700"><?php _e('نام بهره‌بردار ⭐', 'warranty-plugin'); ?></label>
+                    <label for="operator_name" class="block text-sm font-medium text-gray-700"><?php _e('نام بهره‌بردار', 'warranty-plugin'); ?></label>
                     <input type="text" name="operator_name" id="operator_name" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label for="operator_phone" class="block text-sm font-medium text-gray-700"><?php _e('شماره همراه بهره‌بردار ⭐', 'warranty-plugin'); ?></label>
+                    <label for="operator_phone" class="block text-sm font-medium text-gray-700"><?php _e('شماره همراه بهره‌بردار', 'warranty-plugin'); ?></label>
                     <input type="text" name="operator_phone" id="operator_phone" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
@@ -128,10 +126,10 @@
         </section>
 
         <section class="warranty-section">
-            <h3 class="warranty-section-title"><?php _e('بخش E — تأیید نهایی', 'warranty-plugin'); ?></h3>
+            <h3 class="warranty-section-title"><?php _e('تأیید نهایی', 'warranty-plugin'); ?></h3>
             <label class="inline-flex items-center gap-2">
                 <input type="checkbox" name="confirm_info" value="1" required />
-                <span><?php _e('اینجانب صحت اطلاعات واردشده را تأیید می‌نمایم. ⭐', 'warranty-plugin'); ?></span>
+                <span><?php _e('اینجانب صحت اطلاعات واردشده را تأیید می‌نمایم.', 'warranty-plugin'); ?></span>
             </label>
         </section>
 
