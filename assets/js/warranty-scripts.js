@@ -63,5 +63,59 @@ jQuery(document).ready(function($) {
 
     $('input[name="product_category"]').on('change', updateCategorySections);
 
+    var hologramDigits = $('.hologram-digit');
+    var hologramCodeField = $('#hologram_code');
+
+    function updateHologramCode() {
+        var code = '';
+
+        hologramDigits.each(function() {
+            code += $(this).val();
+        });
+
+        hologramCodeField.val(code);
+    }
+
+    hologramDigits.on('input', function() {
+        var $current = $(this);
+        var value = $current.val().replace(/\D/g, '');
+
+        $current.val(value);
+
+        if (value) {
+            $current.next('.hologram-digit').focus();
+        }
+
+        updateHologramCode();
+    });
+
+    hologramDigits.on('keydown', function(event) {
+        var $current = $(this);
+
+        if (event.key === 'Backspace' && !$current.val()) {
+            $current.prev('.hologram-digit').focus();
+        }
+    });
+
+    hologramDigits.on('paste', function(event) {
+        var pastedData = (event.originalEvent.clipboardData || window.clipboardData).getData('text');
+        var digits = pastedData.replace(/\D/g, '').slice(0, hologramDigits.length).split('');
+
+        if (!digits.length) {
+            return;
+        }
+
+        event.preventDefault();
+
+        hologramDigits.each(function(index) {
+            $(this).val(digits[index] || '');
+        });
+
+        var focusIndex = Math.min(digits.length, hologramDigits.length - 1);
+        hologramDigits.eq(focusIndex).focus();
+        updateHologramCode();
+    });
+
     updateCategorySections();
+    updateHologramCode();
 });
