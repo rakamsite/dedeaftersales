@@ -62,8 +62,60 @@ function sts_add_settings_submenu() {
         'ticket-settings',
         'sts_settings_page'
     );
+
+    add_submenu_page(
+        'edit.php?post_type=ticket',
+        __('بروزرسانی‌ها', 'simple-ticket'),
+        __('بروزرسانی‌ها', 'simple-ticket'),
+        'manage_options',
+        'ticket-updates',
+        'sts_updates_page'
+    );
 }
 add_action('admin_menu', 'sts_add_settings_submenu');
+
+/**
+ * Changelog entries shown in the plugin updates page.
+ *
+ * IMPORTANT: Add a new version entry only when the user explicitly asks
+ * to "ثبت لاگ" for that version.
+ *
+ * @return array<string,array<int,string>>
+ */
+function sts_get_updates_log_entries() {
+    return array(
+        '1.2' => array(
+            'بازطراحی مدیریت درخواست‌ها در پنل ادمین با تمرکز بر وضعیت‌های واقعی تیکت.',
+            'خودکارسازی تغییر وضعیت‌ها در سناریوهای پاسخ ادمین و پاسخ مجدد کاربر.',
+            'افزودن صفحه بروزرسانی‌ها برای نمایش تاریخچه تغییرات انجام‌شده در نسخه‌ها.',
+            'بهبود عناوین و دسترسی‌های مدیریتی برای مشاهده سریع‌تر جزئیات درخواست‌ها.',
+        ),
+    );
+}
+
+/**
+ * Render plugin updates page.
+ */
+function sts_updates_page() {
+    $logs = sts_get_updates_log_entries();
+    ?>
+    <div class="wrap">
+        <h1><?php _e('بروزرسانی‌ها', 'simple-ticket'); ?></h1>
+        <p><?php _e('تاریخچه تغییرات افزونه در این بخش نمایش داده می‌شود.', 'simple-ticket'); ?></p>
+
+        <?php foreach ($logs as $version => $items) : ?>
+            <div class="card" style="max-width:900px;padding:16px;margin-top:16px;">
+                <h2 style="margin-top:0;"><?php echo esc_html(sprintf(__('نسخه %s', 'simple-ticket'), $version)); ?></h2>
+                <ul style="list-style:disc;padding-right:20px;">
+                    <?php foreach ($items as $item) : ?>
+                        <li><?php echo esc_html($item); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <?php
+}
 
 function sts_settings_page() {
     if (isset($_POST['submit'])) {
@@ -141,6 +193,126 @@ function sts_enqueue_admin_ticket_assets($hook) {
     }
 }
 add_action('admin_enqueue_scripts', 'sts_enqueue_admin_ticket_assets');
+
+/**
+ * Rename admin row action label from edit to view for tickets.
+ */
+function sts_customize_ticket_row_actions($actions, $post) {
+    if (!is_admin() || !$post || $post->post_type !== 'ticket') {
+        return $actions;
+    }
+
+    if (isset($actions['edit'])) {
+        $actions['edit'] = str_replace(__('ویرایش', 'simple-ticket'), __('نمایش', 'simple-ticket'), $actions['edit']);
+    }
+
+    return $actions;
+}
+add_filter('post_row_actions', 'sts_customize_ticket_row_actions', 10, 2);
+
+/**
+ * Replace ticket list tabs with status-based tabs.
+ */
+function sts_ticket_admin_views($views) {
+    global $typenow;
+
+    if ($typenow !== 'ticket') {
+        return $views;
+    }
+
+    $statuses = array(
+        'new'       => __('جدید', 'simple-ticket'),
+        'reviewed'  => __('بررسی شده', 'simple-ticket'),
+        'responded' => __('پاسخ داده شده', 'simple-ticket'),
+        'closed'    => __('بسته شده', 'simple-ticket'),
+    );
+
+    $counts = array();
+    foreach (array_keys($statuses) as $status_key) {
+        $query = new WP_Query(array(
+            'post_type'      => 'ticket',
+            'post_status'    => 'publish',
+            'posts_per_page' => 1,
+            'fields'         => 'ids',
+            'meta_key'       => 'ticket_status',
+            'meta_value'     => $status_key,
+        ));
+        $counts[$status_key] = (int) $query->found_posts;
+    }
+
+    $current_status = isset($_GET['ticket_status']) ? sanitize_key(wp_unslash($_GET['ticket_status'])) : 'new';
+    if (!isset($statuses[$current_status])) {
+        $current_status = 'new';
+    }
+
+    $base_url  = admin_url('edit.php?post_type=ticket');
+    $new_views = array();
+
+    foreach ($statuses as $status_key => $status_label) {
+        $class = $current_status === $status_key ? ' class="current" aria-current="page"' : '';
+        $url   = esc_url(add_query_arg('ticket_status', $status_key, $base_url));
+        $count = isset($counts[$status_key]) ? $counts[$status_key] : 0;
+
+        $new_views[$status_key] = sprintf(
+            '<a href="%1$s"%2$s>%3$s <span class="count">(%4$d)</span></a>',
+            $url,
+            $class,
+            esc_html($status_label),
+            $count
+        );
+    }
+
+    return $new_views;
+}
+add_filter('views_edit-ticket', 'sts_ticket_admin_views');
+
+/**
+ * Filter ticket list by selected status tab.
+ */
+function sts_filter_ticket_admin_query($query) {
+    if (!is_admin() || !$query->is_main_query()) {
+        return;
+    }
+
+    $post_type = $query->get('post_type');
+    if ($post_type !== 'ticket') {
+        return;
+    }
+
+    $statuses      = array('new', 'reviewed', 'responded', 'closed');
+    $status_filter = isset($_GET['ticket_status']) ? sanitize_key(wp_unslash($_GET['ticket_status'])) : 'new';
+    if (!in_array($status_filter, $statuses, true)) {
+        $status_filter = 'new';
+    }
+
+    $query->set('meta_key', 'ticket_status');
+    $query->set('meta_value', $status_filter);
+}
+add_action('pre_get_posts', 'sts_filter_ticket_admin_query');
+
+/**
+ * Mark new ticket as reviewed on first admin open.
+ */
+function sts_mark_ticket_reviewed_on_first_open() {
+    if (!is_admin() || !isset($_GET['post'], $_GET['action']) || $_GET['action'] !== 'edit') {
+        return;
+    }
+
+    $post_id = intval($_GET['post']);
+    if (!$post_id || get_post_type($post_id) !== 'ticket') {
+        return;
+    }
+
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    $ticket_status = get_post_meta($post_id, 'ticket_status', true);
+    if ($ticket_status === 'new') {
+        update_post_meta($post_id, 'ticket_status', 'reviewed');
+    }
+}
+add_action('load-post.php', 'sts_mark_ticket_reviewed_on_first_open');
 
 function sts_render_ticket_meta_box($post) {
     wp_nonce_field('sts_save_ticket_meta', 'ticket_meta_nonce');
@@ -275,7 +447,8 @@ function sts_save_ticket_meta($post_id) {
         return;
     }
 
-    $responses = get_post_meta($post_id, 'responses', true) ?: array();
+    $responses              = get_post_meta($post_id, 'responses', true) ?: array();
+    $admin_response_submitted = false;
     if (isset($_POST['admin_response']) && !empty($_POST['admin_response'])) {
         $admin_response = sanitize_textarea_field($_POST['admin_response']);
         $responses[]    = array(
@@ -284,6 +457,7 @@ function sts_save_ticket_meta($post_id) {
             'message'=> $admin_response,
         );
         update_post_meta($post_id, 'responses', $responses);
+        $admin_response_submitted = true;
 
         $ticket_status = get_post_meta($post_id, 'ticket_status', true);
         if ($admin_response && $ticket_status !== 'closed') {
@@ -299,6 +473,10 @@ function sts_save_ticket_meta($post_id) {
                 sts_send_ticket_notification($post_id, $message);
             }
         }
+    }
+
+    if ($admin_response_submitted) {
+        $_POST['ticket_status'] = 'responded';
     }
 
     if (isset($_POST['ticket_status'])) {
@@ -735,6 +913,7 @@ function sts_handle_ticket_submission() {
                 'message' => $user_response,
             );
             update_post_meta($ticket_id, 'responses', $responses);
+            update_post_meta($ticket_id, 'ticket_status', 'new');
 
             $admin_email   = get_option('sts_admin_email', get_option('admin_email'));
             $ticket_number = get_post_meta($ticket_id, 'ticket_number', true);
