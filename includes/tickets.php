@@ -84,6 +84,12 @@ add_action('admin_menu', 'sts_add_settings_submenu');
  */
 function sts_get_updates_log_entries() {
     return array(
+        '1.2.1' => array(
+            'بازطراحی ستون‌های لیست درخواست‌ها با حذف عبارت‌های پیش‌فرض تاریخ و افزودن نمایش مستقیم اطلاعات کاربردی.',
+            'افزودن ستون وضعیت برای نمایش وضعیت واقعی هر تیکت در لیست مدیریت.',
+            'افزودن ستون ثبت‌کننده و ستون شماره سفارش یا فاکتور در لیست همه درخواست‌ها.',
+            'حذف گزینه ویرایش سریع از عملیات هر ردیف برای ساده‌سازی مدیریت درخواست‌ها.',
+        ),
         '1.2' => array(
             'بازطراحی مدیریت درخواست‌ها در پنل ادمین با تمرکز بر وضعیت‌های واقعی تیکت.',
             'خودکارسازی تغییر وضعیت‌ها در سناریوهای پاسخ ادمین و پاسخ مجدد کاربر.',
@@ -206,9 +212,82 @@ function sts_customize_ticket_row_actions($actions, $post) {
         $actions['edit'] = str_replace(__('ویرایش', 'simple-ticket'), __('نمایش', 'simple-ticket'), $actions['edit']);
     }
 
+    if (isset($actions['inline hide-if-no-js'])) {
+        unset($actions['inline hide-if-no-js']);
+    }
+
     return $actions;
 }
 add_filter('post_row_actions', 'sts_customize_ticket_row_actions', 10, 2);
+
+/**
+ * Customize ticket columns in admin list table.
+ */
+function sts_customize_ticket_columns($columns) {
+    if (!is_array($columns)) {
+        return $columns;
+    }
+
+    $new_columns = array();
+
+    if (isset($columns['cb'])) {
+        $new_columns['cb'] = $columns['cb'];
+    }
+
+    $new_columns['title']              = __('شماره درخواست', 'simple-ticket');
+    $new_columns['ticket_submitter']   = __('ثبت‌کننده', 'simple-ticket');
+    $new_columns['ticket_order_number'] = __('شماره سفارش یا فاکتور', 'simple-ticket');
+    $new_columns['ticket_status']      = __('وضعیت', 'simple-ticket');
+    $new_columns['ticket_date']        = __('تاریخ', 'simple-ticket');
+
+    return $new_columns;
+}
+add_filter('manage_ticket_posts_columns', 'sts_customize_ticket_columns');
+
+/**
+ * Render custom ticket columns values in admin list table.
+ */
+function sts_render_ticket_columns($column, $post_id) {
+    if ($column === 'ticket_submitter') {
+        $user_id    = (int) get_post_meta($post_id, 'user_id', true);
+        $user       = $user_id ? get_userdata($user_id) : false;
+        $first_name = $user_id ? get_user_meta($user_id, 'first_name', true) : '';
+        $last_name  = $user_id ? get_user_meta($user_id, 'last_name', true) : '';
+        $full_name  = trim($first_name . ' ' . $last_name);
+
+        if ($full_name === '' && $user) {
+            $full_name = $user->display_name;
+        }
+
+        echo esc_html($full_name !== '' ? $full_name : __('نامشخص', 'simple-ticket'));
+        return;
+    }
+
+    if ($column === 'ticket_order_number') {
+        $order_number = get_post_meta($post_id, 'order_number', true);
+        echo esc_html($order_number !== '' ? $order_number : '—');
+        return;
+    }
+
+    if ($column === 'ticket_status') {
+        $ticket_status = get_post_meta($post_id, 'ticket_status', true);
+        $statuses      = array(
+            'new'       => __('جدید', 'simple-ticket'),
+            'reviewed'  => __('بررسی شده', 'simple-ticket'),
+            'responded' => __('پاسخ داده شده', 'simple-ticket'),
+            'closed'    => __('بسته شده', 'simple-ticket'),
+        );
+
+        echo esc_html($statuses[$ticket_status] ?? __('نامشخص', 'simple-ticket'));
+        return;
+    }
+
+    if ($column === 'ticket_date') {
+        $date = get_the_date('Y/m/d H:i', $post_id);
+        echo esc_html($date !== '' ? $date : '—');
+    }
+}
+add_action('manage_ticket_posts_custom_column', 'sts_render_ticket_columns', 10, 2);
 
 /**
  * Replace ticket list tabs with status-based tabs.
