@@ -23,7 +23,11 @@ input, select, textarea {
 }
 
 .hologram-code-grid {
-    @apply mt-1 grid grid-cols-6 gap-2;
+    margin-top: 0.25rem;
+    display: grid;
+    grid-template-columns: repeat(6, 48px);
+    gap: 0.5rem;
+    justify-content: start;
 }
 
 .hologram-digit {
@@ -31,6 +35,14 @@ input, select, textarea {
     width: 48px;
     height: 48px;
     padding: 0;
+    border: 1px solid #d1d5db;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.hologram-digit:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 button:hover {
