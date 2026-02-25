@@ -32,7 +32,6 @@ HTML;
         <?php wp_nonce_field('submit_warranty', 'warranty_nonce'); ?>
 
         <section class="warranty-section">
-            <h3 class="warranty-section-title"><?php _e('انتخاب محصول', 'warranty-plugin'); ?></h3>
             <div class="space-y-3">
                 <div class="flex flex-col md:flex-row gap-4">
                     <label class="inline-flex items-center gap-2">
@@ -48,7 +47,6 @@ HTML;
         </section>
 
         <section class="warranty-section">
-            <h3 class="warranty-section-title"><?php _e('نوع محصول', 'warranty-plugin'); ?></h3>
             <div id="warranty-section-part" class="space-y-4 hidden" data-warranty-section>
                 <label for="product_type" class="block text-sm font-medium text-gray-700"><?php _e('نوع محصول', 'warranty-plugin'); ?></label>
                 <select name="product_type" id="product_type" class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-required="true" disabled>
@@ -78,11 +76,18 @@ HTML;
         </section>
 
         <section class="warranty-section">
-            <h3 class="warranty-section-title"><?php _e('اطلاعات هولوگرام', 'warranty-plugin'); ?></h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 <div class="space-y-2">
-                    <label for="hologram_code" class="block text-sm font-medium text-gray-700"><?php _e('کد هولوگرام طلایی', 'warranty-plugin'); ?></label>
-                    <input type="text" name="hologram_code" id="hologram_code" inputmode="numeric" pattern="\d{6}" maxlength="6" minlength="6" required class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-medium text-gray-700"><?php _e('کد هولوگرام طلایی', 'warranty-plugin'); ?></label>
+                    <div class="hologram-code-grid" dir="ltr" aria-label="<?php esc_attr_e('کد هولوگرام طلایی', 'warranty-plugin'); ?>">
+                        <input type="text" class="hologram-digit" inputmode="numeric" pattern="\d" maxlength="1" required aria-label="<?php esc_attr_e('رقم 1', 'warranty-plugin'); ?>">
+                        <input type="text" class="hologram-digit" inputmode="numeric" pattern="\d" maxlength="1" required aria-label="<?php esc_attr_e('رقم 2', 'warranty-plugin'); ?>">
+                        <input type="text" class="hologram-digit" inputmode="numeric" pattern="\d" maxlength="1" required aria-label="<?php esc_attr_e('رقم 3', 'warranty-plugin'); ?>">
+                        <input type="text" class="hologram-digit" inputmode="numeric" pattern="\d" maxlength="1" required aria-label="<?php esc_attr_e('رقم 4', 'warranty-plugin'); ?>">
+                        <input type="text" class="hologram-digit" inputmode="numeric" pattern="\d" maxlength="1" required aria-label="<?php esc_attr_e('رقم 5', 'warranty-plugin'); ?>">
+                        <input type="text" class="hologram-digit" inputmode="numeric" pattern="\d" maxlength="1" required aria-label="<?php esc_attr_e('رقم 6', 'warranty-plugin'); ?>">
+                    </div>
+                    <input type="hidden" name="hologram_code" id="hologram_code" value="">
                 </div>
                 <?php $hologram_image = get_option('sts_hologram_sample_image'); ?>
                 <?php if (!empty($hologram_image)) : ?>
@@ -94,7 +99,6 @@ HTML;
         </section>
 
         <section class="warranty-section">
-            <h3 class="warranty-section-title"><?php _e('اطلاعات گارانتی', 'warranty-plugin'); ?></h3>
             <div id="warranty-fields-part" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden" data-warranty-fields>
                 <div>
                     <label for="purchase_date_part" class="block text-sm font-medium text-gray-700"><?php _e('تاریخ خرید', 'warranty-plugin'); ?></label>
@@ -131,23 +135,10 @@ HTML;
                     <label for="purchase_date_tool" class="block text-sm font-medium text-gray-700"><?php _e('تاریخ خرید', 'warranty-plugin'); ?></label>
                     <input type="text" name="purchase_date" id="purchase_date_tool" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
-                <div>
-                    <label for="operator_name" class="block text-sm font-medium text-gray-700"><?php _e('نام بهره‌بردار', 'warranty-plugin'); ?></label>
-                    <input type="text" name="operator_name" id="operator_name" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label for="operator_phone" class="block text-sm font-medium text-gray-700"><?php _e('شماره همراه بهره‌بردار', 'warranty-plugin'); ?></label>
-                    <input type="text" name="operator_phone" id="operator_phone" data-required="true" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label for="operator_email" class="block text-sm font-medium text-gray-700"><?php _e('ایمیل بهره‌بردار (اختیاری)', 'warranty-plugin'); ?></label>
-                    <input type="email" name="operator_email" id="operator_email" disabled class="mt-1 block w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
             </div>
         </section>
 
         <section class="warranty-section">
-            <h3 class="warranty-section-title"><?php _e('تأیید نهایی', 'warranty-plugin'); ?></h3>
             <label class="inline-flex items-center gap-2">
                 <input type="checkbox" name="confirm_info" value="1" required />
                 <span><?php _e('اینجانب صحت اطلاعات واردشده را تأیید می‌نمایم.', 'warranty-plugin'); ?></span>

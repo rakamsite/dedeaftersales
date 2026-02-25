@@ -147,7 +147,7 @@ function sts_handle_warranty_submission() {
         }
 
         if ($product_category === 'tool') {
-            $required_fields = array($device_type, $purchase_date, $operator_name, $operator_phone);
+            $required_fields = array($device_type, $purchase_date);
             if (in_array('', $required_fields, true)) {
                 $errors[] = 'missing-tool-fields';
             }
