@@ -10,7 +10,7 @@ function sts_register_ticket_post_type() {
     $labels = array(
         'name'               => __('درخواست‌ها', 'simple-ticket'),
         'singular_name'      => __('درخواست', 'simple-ticket'),
-        'menu_name'          => __('درخواست‌ها', 'simple-ticket'),
+        'menu_name'          => __('خدمات پس از فروش', 'simple-ticket'),
         'add_new'            => __('افزودن درخواست', 'simple-ticket'),
         'add_new_item'       => __('افزودن درخواست جدید', 'simple-ticket'),
         'edit_item'          => __('ویرایش درخواست', 'simple-ticket'),
@@ -65,6 +65,15 @@ function sts_add_settings_submenu() {
 
     add_submenu_page(
         'edit.php?post_type=ticket',
+        __('راهنما', 'simple-ticket'),
+        __('راهنما', 'simple-ticket'),
+        'manage_options',
+        'ticket-guide',
+        'sts_guide_page'
+    );
+
+    add_submenu_page(
+        'edit.php?post_type=ticket',
         __('بروزرسانی‌ها', 'simple-ticket'),
         __('بروزرسانی‌ها', 'simple-ticket'),
         'manage_options',
@@ -73,6 +82,52 @@ function sts_add_settings_submenu() {
     );
 }
 add_action('admin_menu', 'sts_add_settings_submenu');
+
+
+/**
+ * Keep after-sales submenus in the intended order.
+ */
+function sts_reorder_after_sales_submenus() {
+    global $submenu;
+
+    $parent_slug = 'edit.php?post_type=ticket';
+    if (!isset($submenu[$parent_slug]) || !is_array($submenu[$parent_slug])) {
+        return;
+    }
+
+    $desired_order = array(
+        'edit.php?post_type=ticket',
+        'post-new.php?post_type=ticket',
+        'ticket-settings',
+        'edit.php?post_type=warranty',
+        'post-new.php?post_type=warranty',
+        'warranty-settings',
+        'ticket-guide',
+        'ticket-updates',
+    );
+
+    $existing = array();
+    foreach ($submenu[$parent_slug] as $item) {
+        if (isset($item[2])) {
+            $existing[$item[2]] = $item;
+        }
+    }
+
+    $ordered = array();
+    foreach ($desired_order as $slug) {
+        if (isset($existing[$slug])) {
+            $ordered[] = $existing[$slug];
+            unset($existing[$slug]);
+        }
+    }
+
+    foreach ($existing as $item) {
+        $ordered[] = $item;
+    }
+
+    $submenu[$parent_slug] = $ordered;
+}
+add_action('admin_menu', 'sts_reorder_after_sales_submenus', 999);
 
 /**
  * Changelog entries shown in the plugin updates page.
@@ -90,6 +145,8 @@ function sts_get_updates_log_entries() {
             'افزودن ستون ثبت‌کننده و ستون شماره سفارش یا فاکتور در لیست همه درخواست‌ها.',
             'افزودن فیلتر جستجو در صفحه همه درخواست‌ها بر اساس ثبت‌کننده و شماره سفارش یا فاکتور.',
             'حذف گزینه ویرایش سریع از عملیات هر ردیف برای ساده‌سازی مدیریت درخواست‌ها.',
+            'یکپارچه‌سازی منوی درخواست‌ها و گارانتی در بخش «خدمات پس از فروش» برای دسترسی متمرکز در پنل ادمین.',
+            'افزودن صفحه «راهنما» شامل راهنمای استفاده و راهنمای توسعه افزونه.',
         ),
         '1.2' => array(
             'بازطراحی مدیریت درخواست‌ها در پنل ادمین با تمرکز بر وضعیت‌های واقعی تیکت.',
@@ -120,6 +177,37 @@ function sts_updates_page() {
                 </ul>
             </div>
         <?php endforeach; ?>
+    </div>
+    <?php
+}
+
+/**
+ * Render plugin guide page.
+ */
+function sts_guide_page() {
+    ?>
+    <div class="wrap">
+        <h1><?php _e('راهنما', 'simple-ticket'); ?></h1>
+
+        <div class="card" style="max-width:900px;padding:16px;margin-top:16px;">
+            <h2 style="margin-top:0;"><?php _e('راهنمای استفاده', 'simple-ticket'); ?></h2>
+            <ol style="list-style:decimal;padding-right:20px;line-height:1.9;">
+                <li><?php _e('برای ثبت درخواست جدید، از منوی «خدمات پس از فروش» وارد «افزودن درخواست» شوید و فرم را کامل کنید.', 'simple-ticket'); ?></li>
+                <li><?php _e('برای بررسی درخواست‌ها، از بخش «درخواست‌ها» لیست همه درخواست‌ها را مشاهده و وضعیت آن‌ها را مدیریت کنید.', 'simple-ticket'); ?></li>
+                <li><?php _e('برای ثبت یا مشاهده گارانتی‌ها، از گزینه‌های «گارانتی‌ها» و «افزودن گارانتی» استفاده کنید.', 'simple-ticket'); ?></li>
+                <li><?php _e('تنظیمات ایمیل پشتیبانی از بخش «تنظیمات درخواست‌ها» و تصویر نمونه هولوگرام از «تنظیمات گارانتی» قابل مدیریت است.', 'simple-ticket'); ?></li>
+            </ol>
+        </div>
+
+        <div class="card" style="max-width:900px;padding:16px;margin-top:16px;">
+            <h2 style="margin-top:0;"><?php _e('راهنمای توسعه افزونه', 'simple-ticket'); ?></h2>
+            <ul style="list-style:disc;padding-right:20px;line-height:1.9;">
+                <li><?php _e('هسته افزونه در فایل `simple-ticket-system.php` بارگذاری می‌شود و فایل‌های عملکردی در پوشه `includes` قرار دارند.', 'simple-ticket'); ?></li>
+                <li><?php _e('منطق درخواست‌ها در `includes/tickets.php` و منطق گارانتی در `includes/warranty.php` توسعه داده می‌شود.', 'simple-ticket'); ?></li>
+                <li><?php _e('برای تغییر رابط کاربری فرم‌ها از قالب‌های پوشه `templates` و فایل‌های CSS/JS در پوشه `assets` استفاده کنید.', 'simple-ticket'); ?></li>
+                <li><?php _e('برای ثبت تغییرات نسخه، بخش لاگ بروزرسانی‌ها را در تابع `sts_get_updates_log_entries` بروزرسانی کنید.', 'simple-ticket'); ?></li>
+            </ul>
+        </div>
     </div>
     <?php
 }
