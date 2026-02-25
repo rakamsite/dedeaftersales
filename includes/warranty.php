@@ -14,7 +14,7 @@ function sts_register_warranty_post_type() {
         ),
         'public'       => false,
         'show_ui'      => true,
-        'show_in_menu' => true,
+        'show_in_menu' => false,
         'capability_type' => 'post',
         'hierarchical' => false,
         'rewrite'      => false,
@@ -327,9 +327,25 @@ add_action('wp_enqueue_scripts', 'sts_enqueue_warranty_assets');
  */
 function sts_add_warranty_settings_submenu() {
     add_submenu_page(
-        'edit.php?post_type=warranty',
+        'edit.php?post_type=ticket',
+        __('گارانتی‌ها', 'warranty-plugin'),
+        __('گارانتی‌ها', 'warranty-plugin'),
+        'manage_options',
+        'edit.php?post_type=warranty'
+    );
+
+    add_submenu_page(
+        'edit.php?post_type=ticket',
+        __('افزودن گارانتی', 'warranty-plugin'),
+        __('افزودن گارانتی', 'warranty-plugin'),
+        'manage_options',
+        'post-new.php?post_type=warranty'
+    );
+
+    add_submenu_page(
+        'edit.php?post_type=ticket',
         __('تنظیمات گارانتی', 'warranty-plugin'),
-        __('تنظیمات', 'warranty-plugin'),
+        __('تنظیمات گارانتی', 'warranty-plugin'),
         'manage_options',
         'warranty-settings',
         'sts_warranty_settings_page'
@@ -379,7 +395,7 @@ function sts_warranty_settings_page() {
  * Enqueue admin assets for warranty settings.
  */
 function sts_enqueue_warranty_admin_assets($hook) {
-    if ($hook !== 'warranty_page_warranty-settings') {
+    if ($hook !== 'ticket_page_warranty-settings') {
         return;
     }
 
