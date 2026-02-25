@@ -35,7 +35,7 @@ HTML;
             <div class="space-y-3">
                 <div class="flex flex-col md:flex-row gap-4">
                     <label class="inline-flex items-center gap-2">
-                        <input type="radio" name="product_category" value="part" required />
+                        <input type="radio" name="product_category" value="part" required checked />
                         <span><?php _e('سرکابل و مفصل', 'warranty-plugin'); ?></span>
                     </label>
                     <label class="inline-flex items-center gap-2">
