@@ -88,6 +88,7 @@ function sts_get_updates_log_entries() {
             'بازطراحی ستون‌های لیست درخواست‌ها با حذف عبارت‌های پیش‌فرض تاریخ و افزودن نمایش مستقیم اطلاعات کاربردی.',
             'افزودن ستون وضعیت برای نمایش وضعیت واقعی هر تیکت در لیست مدیریت.',
             'افزودن ستون ثبت‌کننده و ستون شماره سفارش یا فاکتور در لیست همه درخواست‌ها.',
+            'افزودن فیلتر جستجو در صفحه همه درخواست‌ها بر اساس ثبت‌کننده و شماره سفارش یا فاکتور.',
             'حذف گزینه ویرایش سریع از عملیات هر ردیف برای ساده‌سازی مدیریت درخواست‌ها.',
         ),
         '1.2' => array(
@@ -346,6 +347,33 @@ function sts_ticket_admin_views($views) {
 add_filter('views_edit-ticket', 'sts_ticket_admin_views');
 
 /**
+ * Render ticket-specific filters in admin list table.
+ */
+function sts_render_ticket_admin_filters($post_type) {
+    if ($post_type !== 'ticket') {
+        return;
+    }
+
+    $submitter_keyword = isset($_GET['ticket_submitter']) ? sanitize_text_field(wp_unslash($_GET['ticket_submitter'])) : '';
+    $order_number      = isset($_GET['ticket_order_number']) ? sanitize_text_field(wp_unslash($_GET['ticket_order_number'])) : '';
+    ?>
+    <input
+        type="search"
+        name="ticket_submitter"
+        value="<?php echo esc_attr($submitter_keyword); ?>"
+        placeholder="<?php esc_attr_e('جستجو بر اساس ثبت‌کننده', 'simple-ticket'); ?>"
+    />
+    <input
+        type="search"
+        name="ticket_order_number"
+        value="<?php echo esc_attr($order_number); ?>"
+        placeholder="<?php esc_attr_e('جستجو بر اساس شماره سفارش یا فاکتور', 'simple-ticket'); ?>"
+    />
+    <?php
+}
+add_action('restrict_manage_posts', 'sts_render_ticket_admin_filters');
+
+/**
  * Filter ticket list by selected status tab.
  */
 function sts_filter_ticket_admin_query($query) {
@@ -364,8 +392,62 @@ function sts_filter_ticket_admin_query($query) {
         $status_filter = 'new';
     }
 
-    $query->set('meta_key', 'ticket_status');
-    $query->set('meta_value', $status_filter);
+    $meta_query = array(
+        'relation' => 'AND',
+        array(
+            'key'   => 'ticket_status',
+            'value' => $status_filter,
+        ),
+    );
+
+    $order_number = isset($_GET['ticket_order_number']) ? sanitize_text_field(wp_unslash($_GET['ticket_order_number'])) : '';
+    if ($order_number !== '') {
+        $meta_query[] = array(
+            'key'     => 'order_number',
+            'value'   => $order_number,
+            'compare' => 'LIKE',
+        );
+    }
+
+    $submitter_keyword = isset($_GET['ticket_submitter']) ? sanitize_text_field(wp_unslash($_GET['ticket_submitter'])) : '';
+    if ($submitter_keyword !== '') {
+        $matched_by_profile = get_users(array(
+            'fields'         => 'ids',
+            'search'         => '*' . $submitter_keyword . '*',
+            'search_columns' => array('display_name', 'user_login', 'user_email'),
+        ));
+
+        $matched_by_name = get_users(array(
+            'fields'     => 'ids',
+            'meta_query' => array(
+                'relation' => 'OR',
+                array(
+                    'key'     => 'first_name',
+                    'value'   => $submitter_keyword,
+                    'compare' => 'LIKE',
+                ),
+                array(
+                    'key'     => 'last_name',
+                    'value'   => $submitter_keyword,
+                    'compare' => 'LIKE',
+                ),
+            ),
+        ));
+
+        $matched_users = array_unique(array_merge($matched_by_profile, $matched_by_name));
+
+        if (empty($matched_users)) {
+            $query->set('post__in', array(0));
+        } else {
+            $meta_query[] = array(
+                'key'     => 'user_id',
+                'value'   => array_map('strval', $matched_users),
+                'compare' => 'IN',
+            );
+        }
+    }
+
+    $query->set('meta_query', $meta_query);
 }
 add_action('pre_get_posts', 'sts_filter_ticket_admin_query');
 
